@@ -1,0 +1,79 @@
+---
+alwaysApply: true
+---
+
+# Project Stack & Coding Conventions
+
+You must follow these conventions for all TypeScript, JavaScript, TSX, and JSX files:
+
+## Technical Stack
+- **Language**: TypeScript (Strict mode, no implicit 'any').
+- **Frameworks and Technologies**: Nest.js, PostgreSQL, Module CSS, Axios (Lib), class-validator (Lib), class-transformer (Lib), Yup (Lib, frontend), React, Lucide React (Lib, frontend), Docker, Swagger.
+- **Testing**: Vitest for unit tests.
+  - Place tests next to the source code using `*.test.ts` naming.
+- **Linting/Formatting**: ESLint + Prettier.
+
+## Naming Conventions
+- **Variables & Functions**: camelCase.
+- **Components & Types/Interfaces**: PascalCase.
+- **Files**: kebab-case (e.g., `user-profile.tsx`).
+
+## API, Error Handling & Data Validation
+- **JSDoc**: Document all public functions using JSDoc.
+- **Error Handling**: Never swallow errors. Use Result-type patterns or throw meaningful, descriptive errors.
+
+## Development Workflow
+- **Test-First Approach**: Before implementing any new logic, feature, or bug fix, you must first create the necessary **mocks** and **unit tests**. 
+- **TDD Cycle**: Write the test, verify that it fails, and only then add the implementation.
+- **Mandatory Verification**: After every change or addition, the project must successfully pass the following checks:
+  1. **Build**: `npm run build` must complete without errors.
+  2. **Linting**: `npm run lint` must pass (no style or syntax violations).
+  3. **Testing**: `npm run test` must result in 100% pass rate for the affected logic.
+
+## Architecture & Design Decisions
+- Always refer to `docs/` files when suggesting architectural changes or new features. Follow existing ADRs strictly.
+Here is the updated project organization guide in English:
+
+- **Feature-Based Organization:** All business logic must be organized by features within the `src/features/` directory. Each feature should be self-contained, encapsulating its own logic, controllers, models, and tests.
+- **Shared Components:** General-purpose components (e.g., mathematical operations, utilities, validators) that are used across multiple features must be placed in the `src/common/` directory and categorized by type.
+- **Function Focus and Conciseness:** Functions must remain focused and should not exceed **15-20 lines**. If a function grows beyond this limit, it must be refactored into smaller, testable sub-functions.
+- **Naming Conventions:** Use clear suffixes to define the role of each file (e.g., `.service.ts`, `.utils.ts`, `.controller.ts`, `.module.ts`).
+
+## Project Structure Example:
+
+**1. Global Shared Components (`src/common/`):**
+Organized by tool type for use across the entire application:
+*   **math/**
+    *   `sum.utils.ts`
+    *   `funcs.utils.ts`
+*   **utils/**
+    *   `validators.utils.ts`
+    *   `formatters.utils.ts`
+
+**2. Business Features (`src/features/`):**
+Each directory represents a standalone module:
+*   **database/**
+    *   `db.service.ts`
+    *   `db.utils.ts`
+    *   `db.controller.ts`
+    *   `db.model.ts`
+    *   `db.module.ts`
+    *   `db.controller.test.ts`
+*   **main-page/**
+    *   `main.service.ts`
+    *   `main.tsx`
+    *   `main.utils.ts`
+    *   `main.styles.css`
+*   **auth/**
+    *   `auth.service.ts`
+    *   `auth.controller.ts`
+    *   ...
+
+**Separation of Concerns Rule:**
+*   **Local Logic:** If a helper function is specific only to one feature, keep it within that feature's directory (e.g., `src/features/database/db.utils.ts`).
+*   **Global Logic:** If a component or utility is generic and reusable across different features, move it to the corresponding subfolder in `src/common/`.
+
+## Anti-Patterns
+- Eliminate "magic numbers" and hardcoded strings. Any value with semantic meaning must be defined as a named constant in `src/common/constants` or `src/features/.../.constants.ts`.
+- Avoid God Entities. Strictly prohibit the creation of "God Classes" or "God Methods" that handle too many responsibilities.
+- Adhere to the Single Responsibility Principle (SRP). If a class or function manages multiple business domains, it must be refactored into specialized units.
