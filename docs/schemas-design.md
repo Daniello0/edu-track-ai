@@ -42,6 +42,8 @@
 
 Идентификаторы — `uuid`, генерируются через `uuid_generate_v4()`.
 
+> **ORM:** TypeORM entity-классы — в отдельных фичах `backend/src/features/` (`user/`, `material/`, `quiz/`, `quiz-attempt/`, `refresh-token/`). Подключение и `synchronize` — в `features/database/`. DTO — в `backend/src/common/dto/` (по домену, напр. `dto/user/`), enums — в `backend/src/common/enums/`. В dev-режиме `synchronize: true` — схема автоматически приводится к entity-описанию. Переменные подключения — в `backend/.env.example` (`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`).
+
 > **Принцип персистентности:** записи в БД создаются только для авторизованных пользователей. Гостевые запросы не оставляют следов в PostgreSQL.
 
 ### Table: `users`

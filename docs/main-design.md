@@ -54,8 +54,16 @@
 ```
 backend/
 └── src/
-    ├── common/          # Общие утилиты, guards, constants
-    └── features/        # auth, process, library, …
+    ├── common/              # constants, enums, dto, utils
+    └── features/
+        ├── database/        # TypeORM: config, module, регистрация entity
+        ├── user/            # entity + CRUD (dev)
+        ├── material/        # entity
+        ├── quiz/            # entity + types
+        ├── quiz-attempt/    # entity + types
+        ├── refresh-token/   # entity
+        ├── health/
+        └── auth, process, library, …  # planned
 frontend/
 └── src/
     ├── common/          # Общие компоненты (Header, Toast, …)
@@ -63,9 +71,21 @@ frontend/
 docs/                    # Продуктовая и техническая документация
 ```
 
-**Организация кода** — по [project-conventions.mdc](../.cursor/rules/project-conventions.mdc): feature-based модули в `src/features/`, общие утилиты в `src/common/` (отдельно в `backend/` и `frontend/`).
+**Организация кода** — по [project-conventions.mdc](../.cursor/rules/project-conventions.mdc): feature-based модули в `src/features/`, общие утилиты в `src/common/` (отдельно в `backend/` и `frontend/`). Фича `database` отвечает только за подключение TypeORM; доменные сущности (`user`, `material`, `quiz`, …) — отдельные фичи на одном уровне.
 
-**Основные фичи:**
+**Основные фичи (backend, реализовано):**
+
+| Feature | Назначение |
+| :--- | :--- |
+| `database` | TypeORM-конфигурация, `synchronize`, регистрация entity. |
+| `user` | Entity `users`, CRUD-эндпоинты (dev). |
+| `material` | Entity `materials`. |
+| `quiz` | Entity `quizzes`, типы JSONB-вопросов. |
+| `quiz-attempt` | Entity `quiz_attempts`, типы ответов. |
+| `refresh-token` | Entity `refresh_tokens`. |
+| `health` | Health-check корневого эндпоинта. |
+
+**Основные фичи (frontend):**
 
 | Feature | Назначение |
 | :--- | :--- |
@@ -129,6 +149,11 @@ sequenceDiagram
 | `PATCH` | `/api/library/:id/status` | JWT | Обновление статуса материала. |
 | `DELETE` | `/api/library/:id` | JWT | Удаление материала из библиотеки. |
 | `POST` | `/api/library/:id/quiz/attempts` | JWT | Сохранение результата прохождения теста. |
+| `GET` | `/api/database/users` | — | Список пользователей (инфраструктурный CRUD, dev). |
+| `GET` | `/api/database/users/:id` | — | Пользователь по id. |
+| `POST` | `/api/database/users` | — | Создание пользователя. |
+| `PATCH` | `/api/database/users/:id` | — | Обновление пользователя. |
+| `DELETE` | `/api/database/users/:id` | — | Удаление пользователя. |
 
 JSON-схемы запросов и ответов — в [schemas-design.md](./schemas-design.md).
 
@@ -148,6 +173,7 @@ JSON-схемы запросов и ответов — в [schemas-design.md](./
 | **Состояние UI** | Zustand | Лёгкое глобальное состояние для шагов обработки и reader/quiz. |
 | **Категории** | Enum `MaterialCategory` + structured output AI | Единообразная классификация материалов для дашборда и фильтрации. |
 | **Валидация API** | `class-validator` + `class-transformer` | Согласовано с конвенциями бэкенда. |
+| **ORM** | TypeORM (`synchronize: true` в dev) | Entity — в отдельных фичах (`user/`, `material/`, `quiz/`, …); инфраструктура — в `features/database/`. DTO — `common/dto/`, enums — `common/enums/`. Схема по [schemas-design.md](./schemas-design.md). |
 | **Валидация форм** | Yup | Согласовано с конвенциями фронтенда. |
 
 ## 7. Технические нюансы и вызовы

@@ -8,7 +8,7 @@ You must follow these conventions for all TypeScript, JavaScript, TSX, and JSX f
 
 ## Technical Stack
 - **Language**: TypeScript (Strict mode, no implicit 'any').
-- **Frameworks and Technologies**: Nest.js, PostgreSQL, Module CSS, Axios (Lib), class-validator (Lib), class-transformer (Lib), Yup (Lib, frontend), React, Lucide React (Lib, frontend), Docker, Swagger, Zustand (Lib), Vite (Lib).
+- **Frameworks and Technologies**: Nest.js, PostgreSQL, TypeORM (Lib), Module CSS, Axios (Lib), class-validator (Lib), class-transformer (Lib), Yup (Lib, frontend), React, Lucide React (Lib, frontend), Docker, Swagger, Zustand (Lib), Vite (Lib).
 - **Testing**: Vitest for unit tests.
   - Place tests next to the source code using `*.test.ts` naming.
 - **Linting/Formatting**: ESLint + Prettier.
@@ -43,34 +43,61 @@ Here is the updated project organization guide in English:
 
 **1. Global Shared Components (`src/common/`):**
 Organized by tool type for use across the entire application:
-*   **math/**
-    *   `sum.utils.ts`
-    *   `funcs.utils.ts`
+*   **constants/**
+    *   `app.constants.ts`
+*   **enums/**
+    *   `material-category.enum.ts`
+    *   `material-format.enum.ts`
+    *   `material-status.enum.ts`
+    *   `summary-length.enum.ts`
+*   **dto/**
+    *   `user/`
+        *   `create-user.dto.ts`
+        *   `update-user.dto.ts`
+        *   `user-response.dto.ts`
 *   **utils/**
     *   `validators.utils.ts`
     *   `formatters.utils.ts`
 
 **2. Business Features (`src/features/`):**
-Each directory represents a standalone module:
-*   **database/**
-    *   `db.service.ts`
-    *   `db.utils.ts`
-    *   `db.controller.ts`
-    *   `db.model.ts`
-    *   `db.module.ts`
-    *   `db.controller.test.ts`
-*   **main-page/**
+Each directory represents a standalone module. A feature may start with only an entity; controller, service, and module are added when the API layer is needed.
+*   **database/** — TypeORM infrastructure (connection, config, entity registration)
+    *   `database.module.ts`
+    *   `database.config.ts`
+    *   `database.constants.ts`
+*   **user/**
+    *   `user.entity.ts`
+    *   `user.service.ts`
+    *   `user.controller.ts`
+    *   `user.module.ts`
+    *   `user.utils.ts`
+    *   `user.constants.ts`
+*   **material/**
+    *   `material.entity.ts`
+*   **quiz/**
+    *   `quiz.entity.ts`
+    *   `quiz.types.ts`
+*   **quiz-attempt/**
+    *   `quiz-attempt.entity.ts`
+    *   `quiz-attempt.types.ts`
+*   **refresh-token/**
+    *   `refresh-token.entity.ts`
+*   **health/**
+    *   `health.controller.ts`
+    *   `health.service.ts`
+    *   `health.module.ts`
+*   **auth/** (planned)
+    *   `auth.service.ts`
+    *   `auth.controller.ts`
+    *   ...
+*   **main-page/** (frontend)
     *   `main.service.ts`
     *   `main.tsx`
     *   `main.utils.ts`
     *   `main.styles.css`
-*   **auth/**
-    *   `auth.service.ts`
-    *   `auth.controller.ts`
-    *   ...
 
 **Separation of Concerns Rule:**
-*   **Local Logic:** If a helper function is specific only to one feature, keep it within that feature's directory (e.g., `src/features/database/db.utils.ts`).
+*   **Local Logic:** If a helper function is specific only to one feature, keep it within that feature's directory (e.g., `src/features/user/user.utils.ts`).
 *   **Global Logic:** If a component or utility is generic and reusable across different features, move it to the corresponding subfolder in `src/common/`.
 
 ## Anti-Patterns
