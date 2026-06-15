@@ -1,0 +1,6 @@
+{
+  "watch": ["src/common/dto", "src/features/health/health-response.dto.ts", "scripts/dto-mermaid"],
+  "ext": "ts",
+  "exec": "npx tsx scripts/generate-dto-mermaid.ts",
+  "delay": "300"
+}

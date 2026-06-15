@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     globals: false,
     root: './',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',

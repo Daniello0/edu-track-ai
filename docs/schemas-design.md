@@ -42,7 +42,7 @@
 
 Идентификаторы — `uuid`, генерируются через `uuid_generate_v4()`.
 
-> **ORM:** TypeORM entity-классы — в отдельных фичах `backend/src/features/` (`user/`, `material/`, `quiz/`, `quiz-attempt/`, `refresh-token/`). Подключение и `synchronize` — в `features/database/`. DTO — в `backend/src/common/dto/` (по домену, напр. `dto/user/`), enums — в `backend/src/common/enums/`. В dev-режиме `synchronize: true` — схема автоматически приводится к entity-описанию. Переменные подключения — в `backend/.env.example` (`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`).
+> **ORM:** TypeORM entity-классы — в отдельных фичах `backend/src/features/` (`user/`, `material/`, `quiz/`, `quiz-attempt/`, `refresh-token/`). Подключение и `synchronize` — в `features/database/`. DTO — в `backend/src/common/dto/` (по домену, напр. `dto/user/`), enums — в `backend/src/common/enums/`. Диаграмма DTO-классов — [mermaid-dto-class-diagram.md](./mermaid-dto-class-diagram.md). В dev-режиме `synchronize: true` — схема автоматически приводится к entity-описанию. Переменные подключения — в `backend/.env.example` (`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`).
 
 > **Принцип персистентности:** записи в БД создаются только для авторизованных пользователей. Гостевые запросы не оставляют следов в PostgreSQL.
 
@@ -170,11 +170,12 @@ sequenceDiagram
 
 ### Привязка гостевой сессии
 
-1. Гость обрабатывает видео → результат в Zustand + `sessionStorage` (`edutrack:pendingMaterial`).
-2. Гость нажимает «Сохранить» → модальное окно авторизации.
-3. После успешного `POST /api/auth/session` → фронтенд вызывает `POST /api/library/claim-pending` с данными из `sessionStorage`.
-4. Бэкенд создаёт `material` + `quiz` (или возвращает существующий при совпадении `settings_hash`).
-5. `sessionStorage` очищается; материал появляется в библиотеке.
+1. Гость обрабатывает видео → бэкенд сохраняет **полный** результат (включая quiz с `correctAnswerIndex`) во **временном pending store** (in-memory/Redis, TTL) и возвращает клиенту только публичные поля + `pendingId`.
+2. Фронтенд кладёт `pendingId` и данные для UI в Zustand + `sessionStorage` (`edutrack:pendingMaterial`). `correctAnswerIndex` клиенту **не передаётся**.
+3. Гость нажимает «Сохранить» → модальное окно авторизации.
+4. После успешного `POST /api/auth/session` → фронтенд вызывает `POST /api/library/claim-pending` с `{ "pendingId": "..." }`.
+5. Бэкенд загружает данные из pending store и создаёт `material` + `quiz` (или возвращает существующий при совпадении `settings_hash`).
+6. `sessionStorage` очищается; запись в pending store удаляется; материал появляется в библиотеке.
 
 ---
 
@@ -284,8 +285,7 @@ sequenceDiagram
   "quiz": [
     {
       "question": "string",
-      "options": ["string"],
-      "correctAnswerIndex": 0
+      "options": ["string"]
     }
   ]
 }
@@ -298,6 +298,7 @@ sequenceDiagram
 ```json
 {
   "id": null,
+  "pendingId": "uuid",
   "videoId": "VIDEO_ID",
   "title": "string",
   "content": "string (markdown)",
@@ -309,14 +310,15 @@ sequenceDiagram
   "quiz": [
     {
       "question": "string",
-      "options": ["string"],
-      "correctAnswerIndex": 0
+      "options": ["string"]
     }
   ]
 }
 ```
 
-`quiz` — `null`, если `hasQuiz: false`.
+`quiz` — `null`, если `hasQuiz: false`. `pendingId` — ссылка на запись в pending store; обязателен для последующего `claim-pending`.
+
+> **Безопасность quiz:** в API-ответах поле `correctAnswerIndex` **не передаётся** (`QuizQuestionPublicDto`). Полная структура с ответами (`QuizQuestionDto`) хранится только в БД (`quizzes.questions` JSONB) и во временном pending store до claim.
 
 ### POST `/api/library/claim-pending`
 
@@ -326,22 +328,11 @@ sequenceDiagram
 
 ```json
 {
-  "videoId": "VIDEO_ID",
-  "title": "string",
-  "content": "string",
-  "category": "programming",
-  "format": "narrative",
-  "summaryLength": null,
-  "language": "ru",
-  "quiz": [
-    {
-      "question": "string",
-      "options": ["string"],
-      "correctAnswerIndex": 0
-    }
-  ]
+  "pendingId": "uuid"
 }
 ```
+
+`pendingId` — значение из ответа `POST /api/process` для гостевой сессии. Бэкенд восстанавливает материал и quiz из pending store; клиент **не** пересылает `content` и `quiz`.
 
 **Response (201):**
 
@@ -404,7 +395,12 @@ sequenceDiagram
   "status": "read",
   "quiz": {
     "id": "uuid",
-    "questions": [],
+    "questions": [
+      {
+        "question": "string",
+        "options": ["string"]
+      }
+    ],
     "bestScore": 0,
     "attempts": [
       {
@@ -511,7 +507,7 @@ sequenceDiagram
 
 ## 5. AI Structured Output (Groq)
 
-AI возвращает строго валидный JSON. Бэкенд маппит `processedText` → `content`, `correctIndex` → `correctAnswerIndex`.
+AI возвращает строго валидный JSON. Бэкенд маппит `processedText` → `content`, `correctIndex` → `correctAnswerIndex` (поле **server-internal**, в API-ответах не отдаётся).
 
 Поле `category` — **enum** `MaterialCategory`; AI обязан выбрать ровно одно значение из списка. В JSON Schema для structured output передаётся `enum` со всеми допустимыми значениями.
 
@@ -605,10 +601,9 @@ type MaterialCategory =
   | 'technology'
   | 'other';
 
-interface QuizQuestion {
+interface QuizQuestionPublic {
   question: string;
   options: string[];
-  correctAnswerIndex: number;
 }
 
 interface AppState {
@@ -619,6 +614,7 @@ interface AppState {
   };
   reader: {
     materialId: string | null; // maps from API field `id`
+    pendingId: string | null; // maps from API field `pendingId` (guest only)
     videoId: string | null;
     title: string | null;
     content: string | null;
@@ -626,7 +622,7 @@ interface AppState {
     format: 'narrative' | 'summary' | null;
     summaryLength: 'short' | 'medium' | 'long' | null;
     language: 'ru' | 'en' | 'original' | null;
-    quiz: QuizQuestion[] | null;
+    quiz: QuizQuestionPublic[] | null;
     isPersisted: boolean;
   };
   theme: 'light' | 'dark';
@@ -649,6 +645,7 @@ interface AppState {
 
 ```typescript
 interface PendingMaterial {
+  pendingId: string;
   videoId: string;
   title: string;
   content: string;
@@ -656,9 +653,11 @@ interface PendingMaterial {
   format: 'narrative' | 'summary';
   summaryLength: 'short' | 'medium' | 'long' | null;
   language: 'ru' | 'en' | 'original';
-  quiz: QuizQuestion[] | null;
+  quiz: QuizQuestionPublic[] | null;
 }
 ```
+
+Хранит только данные для UI и `pendingId` для claim. Полный quiz с `correctAnswerIndex` остаётся на сервере в pending store.
 
 После успешного `POST /api/library/claim-pending` ключ удаляется из `sessionStorage`.
 

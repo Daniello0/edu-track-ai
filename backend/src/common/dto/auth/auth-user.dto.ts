@@ -1,0 +1,9 @@
+import { ApiProperty } from '@nestjs/swagger';
+
+/** Authenticated user summary returned in auth session responses. */
+export class AuthUserDto {
+  @ApiProperty({ example: '550e8400-e29b-41d4-a716-446655440000' })
+  id!: string;
+  @ApiProperty({ example: 'user@example.com' })
+  email!: string;
+}

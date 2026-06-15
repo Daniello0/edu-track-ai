@@ -38,7 +38,7 @@
 
 | Модуль | Ответственность |
 | :--- | :--- |
-| **Transcript Collector** | Получение субтитров/транскрипта через `youtube-transcript-api`. |
+| **Transcript Collector** | Получение субтитров/транскрипта через `@hallelx/youtube-transcript` (TypeScript-порт `youtube-transcript-api`, нативно в Node.js). |
 | **AI Processing Engine** | Преобразование сырого текста в пересказ или саммари; генерация теста в JSON; выбор категории из фиксированного enum. |
 | **Testing System** | Прохождение теста на фронтенде; серверная проверка ответов при сохранении попытки. |
 | **Library Management** | CRUD материалов, статусы усвоения, история попыток (только для авторизованных пользователей). |
@@ -125,9 +125,10 @@ sequenceDiagram
         TC-->>BE: Сырой текст
         BE->>AI: Обработка + генерация теста
         AI-->>BE: JSON-результат
+        BE->>BE: Сохранить в pending store (полный quiz)
         Note over BE,DB: Запись в БД не выполняется
-        BE-->>FE: Контент + quiz (isPersisted: false)
-        FE->>FE: sessionStorage (только текущая вкладка)
+        BE-->>FE: Контент + quiz (public) + pendingId (isPersisted: false)
+        FE->>FE: sessionStorage (pendingId + UI-данные)
     end
 
     FE-->>U: Экран чтения
@@ -143,17 +144,17 @@ sequenceDiagram
 | `POST` | `/api/auth/refresh` | — | Обновление access token по refresh token. |
 | `POST` | `/api/auth/logout` | — | Отзыв refresh token. |
 | `POST` | `/api/process` | Optional | Обработка видео; для авторизованных — автосохранение в библиотеку. |
-| `POST` | `/api/library/claim-pending` | JWT | Сохранение материала из гостевой сессии после входа. |
+| `POST` | `/api/library/claim-pending` | JWT | Сохранение гостевого материала по `pendingId` после входа. |
 | `GET` | `/api/library` | JWT | Список материалов текущего пользователя. |
 | `GET` | `/api/library/:id` | JWT | Полный текст, тест и история попыток. |
 | `PATCH` | `/api/library/:id/status` | JWT | Обновление статуса материала. |
 | `DELETE` | `/api/library/:id` | JWT | Удаление материала из библиотеки. |
 | `POST` | `/api/library/:id/quiz/attempts` | JWT | Сохранение результата прохождения теста. |
-| `GET` | `/api/database/users` | — | Список пользователей (инфраструктурный CRUD, dev). |
-| `GET` | `/api/database/users/:id` | — | Пользователь по id. |
-| `POST` | `/api/database/users` | — | Создание пользователя. |
-| `PATCH` | `/api/database/users/:id` | — | Обновление пользователя. |
-| `DELETE` | `/api/database/users/:id` | — | Удаление пользователя. |
+| `GET` | `/api/users` | — | Список пользователей (инфраструктурный CRUD, dev). |
+| `GET` | `/api/users/:id` | — | Пользователь по id. |
+| `POST` | `/api/users` | — | Создание пользователя. |
+| `PATCH` | `/api/users/:id` | — | Обновление пользователя. |
+| `DELETE` | `/api/users/:id` | — | Удаление пользователя. |
 
 JSON-схемы запросов и ответов — в [schemas-design.md](./schemas-design.md).
 
@@ -164,16 +165,16 @@ JSON-схемы запросов и ответов — в [schemas-design.md](./
 | Область | Решение | Обоснование |
 | :--- | :--- | :--- |
 | **AI-провайдер** | Groq | Оптимальное соотношение цены и качества для текстовой обработки. |
-| **Транскрипт** | `youtube-transcript-api` | Лёгкая интеграция без тяжёлого Google API. |
+| **Транскрипт** | `@hallelx/youtube-transcript` | TypeScript-порт `youtube-transcript-api`; нативная интеграция в NestJS без Python/subprocess. |
 | **Длинные видео** | Chunking + MapReduce при длительности > 45 мин | Обход лимитов контекстного окна AI. |
 | **Персистентность** | Только для авторизованных пользователей | Материалы хранятся в `materials` в рамках аккаунта; гости работают без записи в БД. |
 | **Дедупликация** | `settings_hash` в `materials` (per user) | Повторная обработка того же видео с теми же настройками возвращает существующий материал без вызова AI. |
 | **Аутентификация** | Firebase Auth + JWT (access + refresh) | Firebase управляет Google/email-потоками; NestJS `JwtAuthGuard` защищает API. |
-| **Гостевая сессия** | `sessionStorage` на фронтенде | Временное хранение последнего результата до авторизации; после входа — `claim-pending`. |
+| **Гостевая сессия** | `pendingId` + UI-данные в `sessionStorage` | Бэкенд хранит полный результат во временном pending store; после входа — `claim-pending` по `pendingId`. |
 | **Состояние UI** | Zustand | Лёгкое глобальное состояние для шагов обработки и reader/quiz. |
 | **Категории** | Enum `MaterialCategory` + structured output AI | Единообразная классификация материалов для дашборда и фильтрации. |
 | **Валидация API** | `class-validator` + `class-transformer` | Согласовано с конвенциями бэкенда. |
-| **ORM** | TypeORM (`synchronize: true` в dev) | Entity — в отдельных фичах (`user/`, `material/`, `quiz/`, …); инфраструктура — в `features/database/`. DTO — `common/dto/`, enums — `common/enums/`. Схема по [schemas-design.md](./schemas-design.md). |
+| **ORM** | TypeORM (`synchronize: true` в dev) | Entity — в отдельных фичах (`user/`, `material/`, `quiz/`, …); инфраструктура — в `features/database/`. DTO — `common/dto/` ([диаграмма](./mermaid-dto-class-diagram.md)), enums — `common/enums/`. Схема API — в [schemas-design.md](./schemas-design.md). |
 | **Валидация форм** | Yup | Согласовано с конвенциями фронтенда. |
 
 ## 7. Технические нюансы и вызовы
@@ -182,7 +183,7 @@ JSON-схемы запросов и ответов — в [schemas-design.md](./
 - **Качество транскрипта:** автоматические субтитры YouTube содержат ошибки; промпт AI включает инструкцию по исправлению опечаток и пунктуации.
 - **Безопасность:** rate limiting на `/api/process` (по IP для гостей, по `user_id` для авторизованных), чтобы не исчерпать бюджет AI-токенов.
 - **Отсутствие субтитров:** возвращать понятную ошибку пользователю; распознавание аудио (Whisper) — вне scope MVP.
-- **Проверка тестов:** ответы проверяются на сервере при `POST /api/library/:id/quiz/attempts`; клиент не является источником истины для `score`.
+- **Проверка тестов:** ответы проверяются на сервере при `POST /api/library/:id/quiz/attempts`; клиент не является источником истины для `score`. `correctAnswerIndex` не отдаётся в API-ответах до сдачи попытки.
 
 ## 8. Потенциальные сложности
 
@@ -191,5 +192,5 @@ JSON-схемы запросов и ответов — в [schemas-design.md](./
 | Видео без субтитров | Ошибка с рекомендацией выбрать другое видео. |
 | Очень длинные лекции (> 45 мин) | Chunking с прогрессом на UI (см. [ui-ux-design.md](./ui-ux-design.md)). |
 | Повторная обработка одного URL (авторизованный) | Дедуп по `user_id` + `settings_hash` в `materials`. |
-| Гость теряет материал | Модальное окно авторизации + `POST /api/library/claim-pending` после входа (данные из `sessionStorage`). |
+| Гость теряет материал | Модальное окно авторизации + `POST /api/library/claim-pending` с `pendingId` из `sessionStorage`. |
 | Гость закрыл вкладку | Материал недоступен — в БД не сохранялся; предложить авторизацию до закрытия. |

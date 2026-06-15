@@ -25,7 +25,7 @@ import { USER_API_PREFIX } from './user.constants';
 import { UserService } from './user.service';
 import { mapUserToResponse } from './user.utils';
 
-@ApiTags('database')
+@ApiTags('users')
 @Controller(USER_API_PREFIX)
 export class UserController {
   constructor(private readonly userService: UserService) {}
