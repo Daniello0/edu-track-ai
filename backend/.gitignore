@@ -11,6 +11,9 @@ build/
 .env.*
 !.env.example
 
+# Firebase Admin credentials (real key — never commit)
+config/firebase-service-account.json
+
 # Logs
 logs/
 *.log

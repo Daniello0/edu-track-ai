@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  NotImplementedException,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import {
   ApiNoContentResponse,
   ApiOkResponse,
@@ -19,11 +12,14 @@ import { AuthRefreshResponseDto } from '../../common/dto/auth/auth-refresh-respo
 import { AuthSessionRequestDto } from '../../common/dto/auth/auth-session-request.dto';
 import { AuthSessionResponseDto } from '../../common/dto/auth/auth-session-response.dto';
 import { AUTH_API_PREFIX } from './auth.constants';
+import { AuthService } from './auth.service';
 
 @ApiTags('auth')
 @Public()
 @Controller(AUTH_API_PREFIX)
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
   @Post('session')
   @ApiOperation({
     summary: 'Exchange Firebase ID token for API session tokens',
@@ -35,10 +31,7 @@ export class AuthController {
   createSession(
     @Body() dto: AuthSessionRequestDto,
   ): Promise<AuthSessionResponseDto> {
-    void dto;
-    throw new NotImplementedException(
-      'Auth session exchange is not implemented yet',
-    );
+    return this.authService.createSession(dto);
   }
 
   @Post('refresh')
@@ -52,8 +45,7 @@ export class AuthController {
   refreshSession(
     @Body() dto: AuthRefreshRequestDto,
   ): Promise<AuthRefreshResponseDto> {
-    void dto;
-    throw new NotImplementedException('Token refresh is not implemented yet');
+    return this.authService.refreshSession(dto);
   }
 
   @Post('logout')
@@ -61,7 +53,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Revoke refresh token on logout' })
   @ApiNoContentResponse({ description: 'Refresh token revoked' })
   logout(@Body() dto: AuthLogoutRequestDto): Promise<void> {
-    void dto;
-    throw new NotImplementedException('Logout is not implemented yet');
+    return this.authService.logout(dto);
   }
 }
