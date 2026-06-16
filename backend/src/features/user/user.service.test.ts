@@ -82,6 +82,50 @@ describe('UserService', () => {
     expect(userRepository.save).toHaveBeenCalledWith(createDto);
   });
 
+  it('should create a user on upsert when firebase uid is new', async () => {
+    const upsertPayload = {
+      firebaseUid: mockUser.firebaseUid,
+      email: mockUser.email,
+    };
+    userRepository.findOne.mockResolvedValue(null);
+    userRepository.create.mockReturnValue(upsertPayload);
+    userRepository.save.mockResolvedValue(mockUser);
+
+    const result = await userService.upsertByFirebaseUid(
+      mockUser.firebaseUid,
+      mockUser.email,
+    );
+
+    expect(result).toEqual(mockUser);
+    expect(userRepository.create).toHaveBeenCalledWith(upsertPayload);
+  });
+
+  it('should update email on upsert when firebase uid exists', async () => {
+    const updatedUser = { ...mockUser, email: 'updated@example.com' };
+    userRepository.findOne.mockResolvedValue(mockUser);
+    userRepository.save.mockResolvedValue(updatedUser);
+
+    const result = await userService.upsertByFirebaseUid(
+      mockUser.firebaseUid,
+      'updated@example.com',
+    );
+
+    expect(result).toEqual(updatedUser);
+    expect(userRepository.save).toHaveBeenCalledWith(updatedUser);
+  });
+
+  it('should return existing user on upsert when email is unchanged', async () => {
+    userRepository.findOne.mockResolvedValue(mockUser);
+
+    const result = await userService.upsertByFirebaseUid(
+      mockUser.firebaseUid,
+      mockUser.email,
+    );
+
+    expect(result).toEqual(mockUser);
+    expect(userRepository.save).not.toHaveBeenCalled();
+  });
+
   it('should update a user', async () => {
     const updateDto = { email: 'updated@example.com' };
     const updatedUser = { ...mockUser, ...updateDto };
