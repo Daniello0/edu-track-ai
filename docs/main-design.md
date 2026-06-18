@@ -58,12 +58,12 @@ backend/
     └── features/
         ├── database/        # TypeORM: config, module, регистрация entity
         ├── user/            # entity + CRUD (dev)
-        ├── material/        # entity
-        ├── quiz/            # entity + types
-        ├── quiz-attempt/    # entity + types
+        ├── material/        # entity + service (CRUD, dedup lookup)
+        ├── quiz/            # entity + types + service (create, best_score)
+        ├── quiz-attempt/    # entity + types + service (attempt persistence)
         ├── refresh-token/   # entity
         ├── health/
-        └── auth, process, library, …  # planned
+        └── auth, process, library, pending, …  # planned / in progress
 frontend/
 └── src/
     ├── common/          # Общие компоненты (Header, Toast, …)
@@ -79,9 +79,11 @@ docs/                    # Продуктовая и техническая до
 | :--- | :--- |
 | `database` | TypeORM-конфигурация, `synchronize`, регистрация entity. |
 | `user` | Entity `users`, CRUD-эндпоинты (dev). |
-| `material` | Entity `materials`. |
-| `quiz` | Entity `quizzes`, типы JSONB-вопросов. |
-| `quiz-attempt` | Entity `quiz_attempts`, типы ответов. |
+| `material` | Entity `materials`; `MaterialService` — CRUD, dedup lookup, `last_viewed_at`. |
+| `quiz` | Entity `quizzes`, типы JSONB-вопросов; `QuizService` — создание quiz, обновление `best_score`; `quiz.utils` — серверная проверка ответов. |
+| `quiz-attempt` | Entity `quiz_attempts`, типы ответов; `QuizAttemptService` — сохранение попыток. |
+| `pending` | In-memory pending store для гостевых материалов (TTL); используется `process` (запись) и `library` (claim). |
+| `library` | API `/api/library/*`; `LibraryService` оркестрирует `material`, `quiz`, `quiz-attempt`, `pending`. |
 | `refresh-token` | Entity `refresh_tokens`. |
 | `health` | Health-check корневого эндпоинта. |
 
