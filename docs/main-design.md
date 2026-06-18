@@ -58,34 +58,45 @@ backend/
     └── features/
         ├── database/        # TypeORM: config, module, регистрация entity
         ├── user/            # entity + CRUD (dev)
-        ├── material/        # entity
-        ├── quiz/            # entity + types
-        ├── quiz-attempt/    # entity + types
+        ├── auth/            # Firebase session, JWT, guards
+        ├── material/        # entity + service (CRUD, dedup lookup)
+        ├── quiz/            # entity + types + service (create, best_score)
+        ├── quiz-attempt/    # entity + types + service (attempt persistence)
+        ├── pending/         # in-memory guest store (TTL 24 ч)
+        ├── library/         # /api/library/* — оркестрация material, quiz, pending
+        ├── transcript/      # YouTube transcript (service, без HTTP)
+        ├── llm/             # Groq AI processing (service, без HTTP)
         ├── refresh-token/   # entity
         ├── health/
-        └── auth, process, library, …  # planned
-frontend/
-└── src/
-    ├── common/          # Общие компоненты (Header, Toast, …)
-    └── features/        # main-page, reader, quiz, profile, auth
-docs/                    # Продуктовая и техническая документация
+        └── process/         # planned: POST /api/process (transcript + llm + persist/pending)
+frontend/                    # planned — каталог в репозитории пока отсутствует
+docs/                        # Продуктовая и техническая документация
 ```
+
+**`AppModule` (подключено сейчас):** `HealthModule`, `DatabaseModule`, `AuthModule`, `LibraryModule`.  
+OpenAPI/Swagger UI: `GET /docs`.
 
 **Организация кода** — по [project-conventions.mdc](../.cursor/rules/project-conventions.mdc): feature-based модули в `src/features/`, общие утилиты в `src/common/` (отдельно в `backend/` и `frontend/`). Фича `database` отвечает только за подключение TypeORM; доменные сущности (`user`, `material`, `quiz`, …) — отдельные фичи на одном уровне.
 
-**Основные фичи (backend, реализовано):**
+**Основные фичи (backend):**
 
-| Feature | Назначение |
-| :--- | :--- |
-| `database` | TypeORM-конфигурация, `synchronize`, регистрация entity. |
-| `user` | Entity `users`, CRUD-эндпоинты (dev). |
-| `material` | Entity `materials`. |
-| `quiz` | Entity `quizzes`, типы JSONB-вопросов. |
-| `quiz-attempt` | Entity `quiz_attempts`, типы ответов. |
-| `refresh-token` | Entity `refresh_tokens`. |
-| `health` | Health-check корневого эндпоинта. |
+| Feature | Статус | Назначение |
+| :--- | :--- | :--- |
+| `database` | ✓ | TypeORM-конфигурация, `synchronize`, регистрация entity. |
+| `user` | ✓ | Entity `users`, CRUD-эндпоинты `/api/users/*` (dev). |
+| `auth` | ✓ | Firebase Admin + JWT; `/api/auth/session`, `/refresh`, `/logout`; `JwtAuthGuard`, `OptionalJwtAuthGuard`. |
+| `material` | ✓ | Entity `materials`; `MaterialService` — CRUD, dedup lookup, `last_viewed_at`. |
+| `quiz` | ✓ | Entity `quizzes`, типы JSONB-вопросов; `QuizService` — создание quiz, обновление `best_score`; `quiz.utils` — серверная проверка ответов. |
+| `quiz-attempt` | ✓ | Entity `quiz_attempts`, типы ответов; `QuizAttemptService` — сохранение попыток. |
+| `pending` | ✓ | In-memory pending store (`Map`, TTL 24 ч); запись — из `process` (planned), чтение/claim — `library`. |
+| `library` | ✓ | API `/api/library/*`; `LibraryService` оркестрирует `material`, `quiz`, `quiz-attempt`, `pending`. |
+| `transcript` | сервис | `TranscriptService` + `@hallelx/youtube-transcript`; без HTTP-контроллера. |
+| `llm` | сервис | `LlmService` + Groq structured output; chunking > 45 мин; без HTTP-контроллера. |
+| `process` | planned | `POST /api/process` — оркестрация transcript → llm → persist/pending; DTO готовы. |
+| `refresh-token` | ✓ | Entity `refresh_tokens`. |
+| `health` | ✓ | `GET /` — health-check. |
 
-**Основные фичи (frontend):**
+**Основные фичи (frontend, planned):**
 
 | Feature | Назначение |
 | :--- | :--- |
@@ -140,10 +151,12 @@ sequenceDiagram
 
 | Метод | Endpoint | Auth | Назначение |
 | :--- | :--- | :--- | :--- |
+| `GET` | `/` | — | Health-check (`{ "status": "ok" }`). |
+| `GET` | `/docs` | — | Swagger UI (OpenAPI). |
 | `POST` | `/api/auth/session` | — | Обмен Firebase ID Token на JWT-пару. |
 | `POST` | `/api/auth/refresh` | — | Обновление access token по refresh token. |
 | `POST` | `/api/auth/logout` | — | Отзыв refresh token. |
-| `POST` | `/api/process` | Optional | Обработка видео; для авторизованных — автосохранение в библиотеку. |
+| `POST` | `/api/process` | Optional | *(planned)* Обработка видео; для авторизованных — автосохранение в библиотеку. |
 | `POST` | `/api/library/claim-pending` | JWT | Сохранение гостевого материала по `pendingId` после входа. |
 | `GET` | `/api/library` | JWT | Список материалов текущего пользователя. |
 | `GET` | `/api/library/:id` | JWT | Полный текст, тест и история попыток. |
@@ -170,7 +183,7 @@ JSON-схемы запросов и ответов — в [schemas-design.md](./
 | **Персистентность** | Только для авторизованных пользователей | Материалы хранятся в `materials` в рамках аккаунта; гости работают без записи в БД. |
 | **Дедупликация** | `settings_hash` в `materials` (per user) | Повторная обработка того же видео с теми же настройками возвращает существующий материал без вызова AI. |
 | **Аутентификация** | Firebase Auth + JWT (access + refresh) | Firebase управляет Google/email-потоками; NestJS `JwtAuthGuard` защищает API. |
-| **Гостевая сессия** | `pendingId` + UI-данные в `sessionStorage` | Бэкенд хранит полный результат во временном pending store; после входа — `claim-pending` по `pendingId`. |
+| **Гостевая сессия** | `pendingId` + UI-данные в `sessionStorage` | Бэкенд хранит полный результат во in-memory pending store (TTL 24 ч); после входа — `claim-pending` по `pendingId`. |
 | **Состояние UI** | Zustand | Лёгкое глобальное состояние для шагов обработки и reader/quiz. |
 | **Категории** | Enum `MaterialCategory` + structured output AI | Единообразная классификация материалов для дашборда и фильтрации. |
 | **Валидация API** | `class-validator` + `class-transformer` | Согласовано с конвенциями бэкенда. |

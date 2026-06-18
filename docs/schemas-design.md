@@ -170,7 +170,7 @@ sequenceDiagram
 
 ### Привязка гостевой сессии
 
-1. Гость обрабатывает видео → бэкенд сохраняет **полный** результат (включая quiz с `correctAnswerIndex`) во **временном pending store** (in-memory/Redis, TTL) и возвращает клиенту только публичные поля + `pendingId`.
+1. Гость обрабатывает видео → бэкенд сохраняет **полный** результат (включая quiz с `correctAnswerIndex`) во **in-memory pending store** (`Map`, TTL 24 ч) и возвращает клиенту только публичные поля + `pendingId`.
 2. Фронтенд кладёт `pendingId` и данные для UI в Zustand + `sessionStorage` (`edutrack:pendingMaterial`). `correctAnswerIndex` клиенту **не передаётся**.
 3. Гость нажимает «Сохранить» → модальное окно авторизации.
 4. После успешного `POST /api/auth/session` → фронтенд вызывает `POST /api/library/claim-pending` с `{ "pendingId": "..." }`.
@@ -180,6 +180,18 @@ sequenceDiagram
 ---
 
 ## 4. API JSON Schemas
+
+### GET `/`
+
+**Auth:** не требуется.
+
+**Response (200):**
+
+```json
+{
+  "status": "ok"
+}
+```
 
 ### POST `/api/auth/session`
 
@@ -239,9 +251,9 @@ sequenceDiagram
 
 **Защищённые маршруты:** заголовок `Authorization: Bearer <accessToken>`.
 
-### POST `/api/process`
+### POST `/api/process` *(planned — контроллер ещё не подключён)*
 
-**Auth:** опционально (`OptionalJwtAuthGuard`).
+**Auth:** опционально (`OptionalJwtAuthGuard`). Сервисы `transcript` и `llm` реализованы; оркестрация — в фиче `process`.
 
 **Request:**
 
@@ -367,6 +379,8 @@ sequenceDiagram
       "title": "string",
       "category": "programming",
       "format": "summary",
+      "summaryLength": "medium",
+      "language": "ru",
       "status": "read",
       "bestScore": 80,
       "createdAt": "2026-06-11T10:00:00Z",

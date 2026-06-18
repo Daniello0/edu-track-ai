@@ -47,13 +47,13 @@ describe('LlmService', () => {
 
   const groqClient = {
     createChatCompletion: vi.fn(),
-    getModel: vi.fn().mockReturnValue('llama-3.3-70b-versatile'),
+    getModel: vi.fn().mockReturnValue('openai/gpt-oss-20b'),
   };
 
   beforeEach(async () => {
     vi.clearAllMocks();
     groqClient.createChatCompletion.mockReset();
-    groqClient.getModel.mockReturnValue('llama-3.3-70b-versatile');
+    groqClient.getModel.mockReturnValue('openai/gpt-oss-20b');
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

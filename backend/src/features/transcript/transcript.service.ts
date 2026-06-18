@@ -9,7 +9,10 @@ import {
   TRANSCRIPT_NO_SUBTITLES_MESSAGE,
 } from './transcript.constants';
 import { TranscriptFetchResult } from './transcript.types';
-import { joinTranscriptSnippets } from './transcript.utils';
+import {
+  computeDurationSeconds,
+  joinTranscriptSnippets,
+} from './transcript.utils';
 import { YoutubeTranscriptClient } from './youtube-transcript.client';
 
 /** Fetches and normalizes YouTube video transcripts for downstream AI processing. */
@@ -26,11 +29,14 @@ export class TranscriptService {
     try {
       const fetched = await this.youtubeTranscriptClient.fetch(videoId);
 
+      const snippets = [...fetched.snippets];
+
       return {
         videoId: fetched.videoId,
-        text: joinTranscriptSnippets([...fetched.snippets]),
+        text: joinTranscriptSnippets(snippets),
         languageCode: fetched.languageCode,
         isGenerated: fetched.isGenerated,
+        durationSeconds: computeDurationSeconds(snippets),
       };
     } catch (error) {
       throw this.mapTranscriptError(error);

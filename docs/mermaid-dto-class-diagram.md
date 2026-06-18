@@ -2,7 +2,7 @@
 
 > **Auto-generated.** Do not edit manually.
 > **Sources:** `backend/src/common/dto`, `backend/src/features/health/health-response.dto.ts`
-> **Generated at:** 2026-06-15T15:26:32.348Z
+> **Generated at:** 2026-06-18T10:36:54.067Z
 > **Manual reference:** [schemas-design.md](./schemas-design.md) §4 (API JSON Schemas)
 
 Наследование (`<|--`), композиция (`*--`). Классы с префиксом `Abstract` — внутренние предки.
