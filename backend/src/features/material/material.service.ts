@@ -49,6 +49,7 @@ export class MaterialService {
   ): Promise<Material | null> {
     return this.materialRepository.findOne({
       where: { userId, settingsHash },
+      relations: { quiz: true },
     });
   }
 

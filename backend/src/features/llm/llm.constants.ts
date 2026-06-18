@@ -5,7 +5,7 @@ export const GROQ_API_KEY_ENV = 'GROQ_API_KEY';
 export const GROQ_MODEL_ENV = 'GROQ_MODEL';
 
 /** Default Groq model supporting structured JSON output. */
-export const DEFAULT_GROQ_MODEL = 'llama-3.3-70b-versatile';
+export const DEFAULT_GROQ_MODEL = 'openai/gpt-oss-20b';
 
 /** Videos longer than this threshold use chunking + MapReduce. */
 export const LONG_VIDEO_THRESHOLD_SECONDS = 45 * 60; // 45 minutes

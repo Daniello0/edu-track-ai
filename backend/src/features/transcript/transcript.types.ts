@@ -4,4 +4,5 @@ export interface TranscriptFetchResult {
   text: string;
   languageCode: string;
   isGenerated: boolean;
+  durationSeconds: number;
 }

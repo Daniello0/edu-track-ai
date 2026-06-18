@@ -58,6 +58,7 @@ describe('TranscriptService', () => {
       text: 'Never gonna give you up',
       languageCode: 'en',
       isGenerated: true,
+      durationSeconds: 2,
     });
   });
 
