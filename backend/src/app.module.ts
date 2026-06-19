@@ -4,6 +4,7 @@ import { DatabaseModule } from './features/database/database.module';
 import { HealthModule } from './features/health/health.module';
 import { LibraryModule } from './features/library/library.module';
 import { ProcessModule } from './features/process/process.module';
+import { TranscriptModule } from './features/transcript/transcript.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ProcessModule } from './features/process/process.module';
     AuthModule,
     LibraryModule,
     ProcessModule,
+    TranscriptModule,
   ],
 })
 export class AppModule {}

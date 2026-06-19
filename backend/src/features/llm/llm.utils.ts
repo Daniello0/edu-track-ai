@@ -36,7 +36,7 @@ export function chunkTranscript(text: string, maxChars: number): string[] {
 }
 
 /**
- * Maps Groq structured output to the internal material processing result.
+ * Maps LLM structured output to the internal material processing result.
  */
 export function mapAiResponseToResult(
   response: AiMaterialResponse,
@@ -84,19 +84,17 @@ export function validateAiChunkMapResponse(
 export function buildMaterialSystemPrompt(
   settings: ProcessSettingsDto,
 ): string {
-  const formatInstruction = buildFormatInstruction(settings);
-  const languageInstruction = buildLanguageInstruction(settings.language);
-  const quizInstruction = buildQuizInstruction(settings);
-
   return [
-    'You are an educational content processor for EduTrack AI.',
-    'Fix typos, punctuation, and transcription errors in the source transcript.',
-    'Choose exactly one MaterialCategory that best matches the lecture topic.',
-    formatInstruction,
-    languageInstruction,
-    quizInstruction,
+    buildCoreSystemPrompt(),
+    buildTranscriptCleanupInstruction(settings),
+    buildFormatInstruction(settings),
+    buildLanguageInstruction(settings.language),
+    buildCategoryInstruction(),
+    'Create a concise, descriptive title that reflects the lecture subject.',
+    buildQuizInstruction(settings),
     'Return only valid JSON matching the provided schema.',
-  ].join(' ');
+    'The processedText field must be valid markdown.',
+  ].join('\n');
 }
 
 /**
@@ -105,14 +103,10 @@ export function buildMaterialSystemPrompt(
 export function buildMaterialUserPrompt(
   transcriptText: string,
   isReduceStep: boolean,
+  settings?: ProcessSettingsDto,
 ): string {
   if (isReduceStep) {
-    return [
-      'Combine the following partial lecture segments into one coherent material.',
-      'Preserve factual accuracy and remove duplicate content between segments.',
-      'Partial segments:',
-      transcriptText,
-    ].join('\n\n');
+    return buildReduceUserPrompt(transcriptText, settings);
   }
 
   return ['Process the following video transcript:', transcriptText].join(
@@ -129,17 +123,15 @@ export function buildChunkMapPrompts(
   totalChunks: number,
   settings: ProcessSettingsDto,
 ): { system: string; user: string } {
-  const formatInstruction = buildFormatInstruction(settings);
-  const languageInstruction = buildLanguageInstruction(settings.language);
-
   return {
     system: [
-      'You are an educational content processor for EduTrack AI.',
-      'Fix typos, punctuation, and transcription errors in this transcript chunk.',
-      formatInstruction,
-      languageInstruction,
+      buildCoreSystemPrompt(),
+      buildTranscriptCleanupInstruction(settings, 'chunk'),
+      buildFormatInstruction(settings),
+      buildLanguageInstruction(settings.language),
       'Return only valid JSON with processedText for this chunk.',
-    ].join(' '),
+      'The processedText field must be valid markdown.',
+    ].join('\n'),
     user: [
       `Process transcript chunk ${chunkIndex + 1} of ${totalChunks}:`,
       chunkText,
@@ -214,12 +206,88 @@ function isValidQuizQuestion(
   );
 }
 
-function buildFormatInstruction(settings: ProcessSettingsDto): string {
+function buildCoreSystemPrompt(): string {
+  return [
+    'You are an educational content processor for EduTrack AI.',
+    'Transform raw YouTube lecture transcripts into high-quality study material.',
+  ].join(' ');
+}
+
+function buildTranscriptCleanupInstruction(
+  settings: ProcessSettingsDto,
+  scope: 'full' | 'chunk' = 'full',
+): string {
+  const scopeLabel =
+    scope === 'chunk' ? 'this transcript chunk' : 'the transcript';
+
   if (settings.format === MaterialFormat.NARRATIVE) {
-    return 'Produce a structured literary retelling in markdown.';
+    return [
+      `Fix typos, punctuation, and transcription errors in ${scopeLabel}.`,
+      'Remove filler words and verbal tics, but keep the original wording and meaning.',
+      'Do not invent, omit, or paraphrase substantive content.',
+    ].join(' ');
   }
 
-  return `Produce a ${summaryLengthLabel(settings.summaryLength)} summary in markdown.`;
+  return [
+    `Fix typos, punctuation, and transcription errors in ${scopeLabel}.`,
+    'Remove filler words, repetitions, and off-topic digressions.',
+    'Do not invent facts, examples, or details not present in the transcript.',
+  ].join(' ');
+}
+
+function buildReduceUserPrompt(
+  transcriptText: string,
+  settings?: ProcessSettingsDto,
+): string {
+  if (settings?.format === MaterialFormat.NARRATIVE) {
+    return [
+      'Combine the following partial transcript segments into one continuous narrative.',
+      'Keep almost identical wording and roughly the same total length as the subtitles.',
+      'Remove only overlap between segments, ads, sponsorship segments, and paid integrations.',
+      'Partial segments:',
+      transcriptText,
+    ].join('\n\n');
+  }
+
+  return [
+    'Combine the following partial lecture segments into one coherent material.',
+    'Preserve factual accuracy and remove duplicate content between segments.',
+    'Partial segments:',
+    transcriptText,
+  ].join('\n\n');
+}
+
+function buildCategoryInstruction(): string {
+  return [
+    'Choose exactly one MaterialCategory that best matches the lecture topic:',
+    '- programming: software development, coding, frameworks',
+    '- mathematics: math theory, proofs, calculations',
+    '- science: physics, chemistry, biology, natural sciences',
+    '- humanities: history, philosophy, sociology, cultural studies',
+    '- languages: language learning, linguistics, grammar',
+    '- business: management, marketing, finance, economics',
+    '- arts: film, music, visual arts, creative works analysis',
+    '- health: medicine, wellness, nutrition',
+    '- technology: gadgets, IT infrastructure, tech industry',
+    '- other: topics that do not fit the categories above',
+  ].join('\n');
+}
+
+function buildFormatInstruction(settings: ProcessSettingsDto): string {
+  if (settings.format === MaterialFormat.NARRATIVE) {
+    return [
+      'Format: narrative — keep text almost identical to the video transcript.',
+      'Polish it into literary prose: fix errors and remove filler words, but preserve the original meaning, structure, facts, and wording as closely as possible.',
+      'Keep roughly the same length as the subtitles; do not shorten, condense, or summarize.',
+      'Remove ads, sponsorship segments, and paid integrations entirely.',
+      'Use markdown paragraph breaks between logical speech segments; do not add section headings.',
+    ].join(' ');
+  }
+
+  return [
+    `Produce a ${summaryLengthLabel(settings.summaryLength)} summary in markdown.`,
+    'Include a brief introduction and bullet-point key takeaways.',
+  ].join(' ');
 }
 
 function buildLanguageInstruction(language: Language): string {
@@ -242,7 +310,8 @@ function buildQuizInstruction(settings: ProcessSettingsDto): string {
   return [
     `Generate exactly ${settings.quizQuestionsCount} quiz questions.`,
     `Each question must have exactly ${settings.quizOptionsCount} answer options.`,
-    'Base questions on the processed material content.',
+    'Base every question only on facts explicitly stated in the transcript.',
+    'Include one clearly correct answer and plausible distractors.',
   ].join(' ');
 }
 

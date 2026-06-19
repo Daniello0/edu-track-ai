@@ -8,7 +8,7 @@ import {
 const MATERIAL_CATEGORY_ENUM = Object.values(MaterialCategory);
 
 /**
- * Builds JSON Schema for Groq structured output of a full material response.
+ * Builds JSON Schema for structured output of a full material response.
  */
 export function buildMaterialResponseSchema(
   settings: ProcessSettingsDto,
@@ -29,7 +29,7 @@ export function buildMaterialResponseSchema(
 }
 
 /**
- * Builds JSON Schema for Groq structured output when mapping a transcript chunk.
+ * Builds JSON Schema for structured output when mapping a transcript chunk.
  */
 export function buildChunkMapResponseSchema(): Record<string, unknown> {
   return {
@@ -43,9 +43,9 @@ export function buildChunkMapResponseSchema(): Record<string, unknown> {
 }
 
 /**
- * Wraps a JSON Schema for Groq `response_format.json_schema`.
+ * Wraps a JSON Schema for OpenRouter `response_format.json_schema`.
  */
-export function toGroqJsonSchema(
+export function toStructuredJsonSchema(
   name: string,
   schema: Record<string, unknown>,
 ): {
@@ -66,7 +66,7 @@ export function toGroqJsonSchema(
   };
 }
 
-/** Creates the response format for a full material Groq call. */
+/** Creates the response format for a full material LLM call. */
 export function buildMaterialResponseFormat(settings: ProcessSettingsDto): {
   type: 'json_schema';
   json_schema: {
@@ -75,13 +75,13 @@ export function buildMaterialResponseFormat(settings: ProcessSettingsDto): {
     schema: Record<string, unknown>;
   };
 } {
-  return toGroqJsonSchema(
+  return toStructuredJsonSchema(
     AI_MATERIAL_RESPONSE_SCHEMA_NAME,
     buildMaterialResponseSchema(settings),
   );
 }
 
-/** Creates the response format for a chunk map Groq call. */
+/** Creates the response format for a chunk map LLM call. */
 export function buildChunkMapResponseFormat(): {
   type: 'json_schema';
   json_schema: {
@@ -90,7 +90,7 @@ export function buildChunkMapResponseFormat(): {
     schema: Record<string, unknown>;
   };
 } {
-  return toGroqJsonSchema(
+  return toStructuredJsonSchema(
     AI_CHUNK_MAP_RESPONSE_SCHEMA_NAME,
     buildChunkMapResponseSchema(),
   );

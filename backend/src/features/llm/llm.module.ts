@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { GroqClient } from './groq.client';
+import { OpenRouterClient } from './openrouter.client';
 import { LlmService } from './llm.service';
 
 @Module({
-  providers: [GroqClient, LlmService],
+  providers: [OpenRouterClient, LlmService],
   exports: [LlmService],
 })
 export class LlmModule {}

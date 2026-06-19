@@ -1,13 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import {
-  CouldNotRetrieveTranscript,
-  NoTranscriptFound,
-  TranscriptsDisabled,
-} from '@hallelx/youtube-transcript';
-import {
   TRANSCRIPT_FETCH_FAILED_MESSAGE,
   TRANSCRIPT_NO_SUBTITLES_MESSAGE,
 } from './transcript.constants';
+import {
+  isNoSubtitlesTranscriptError,
+  isTranscriptFetchFailedError,
+} from './transcript.error.utils';
 import { TranscriptFetchResult } from './transcript.types';
 import {
   computeDurationSeconds,
@@ -28,7 +27,6 @@ export class TranscriptService {
   async fetchTranscript(videoId: string): Promise<TranscriptFetchResult> {
     try {
       const fetched = await this.youtubeTranscriptClient.fetch(videoId);
-
       const snippets = [...fetched.snippets];
 
       return {
@@ -44,15 +42,15 @@ export class TranscriptService {
   }
 
   private mapTranscriptError(error: unknown): BadRequestException | never {
-    if (error instanceof NoTranscriptFound) {
+    if (!(error instanceof Error)) {
+      throw error;
+    }
+
+    if (isNoSubtitlesTranscriptError(error)) {
       return new BadRequestException(TRANSCRIPT_NO_SUBTITLES_MESSAGE);
     }
 
-    if (error instanceof TranscriptsDisabled) {
-      return new BadRequestException(TRANSCRIPT_NO_SUBTITLES_MESSAGE);
-    }
-
-    if (error instanceof CouldNotRetrieveTranscript) {
+    if (isTranscriptFetchFailedError(error)) {
       return new BadRequestException(TRANSCRIPT_FETCH_FAILED_MESSAGE);
     }
 

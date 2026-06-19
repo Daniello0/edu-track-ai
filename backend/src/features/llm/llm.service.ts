@@ -3,9 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import type { ChatCompletionMessageParam } from 'groq-sdk/resources/chat/completions';
 import { ProcessSettingsDto } from '../../common/dto/process/process-settings.dto';
-import { GroqClient } from './groq.client';
 import {
   LLM_EMPTY_RESPONSE_MESSAGE,
   LLM_INVALID_RESPONSE_MESSAGE,
@@ -33,11 +31,13 @@ import {
   validateAiChunkMapResponse,
   validateAiMaterialResponse,
 } from './llm.utils';
+import { OpenRouterClient } from './openrouter.client';
+import type { OpenRouterChatMessage } from './openrouter.types';
 
-/** Processes transcripts through Groq structured output with optional MapReduce. */
+/** Processes transcripts through OpenRouter structured output with optional MapReduce. */
 @Injectable()
 export class LlmService {
-  constructor(private readonly groqClient: GroqClient) {}
+  constructor(private readonly openRouterClient: OpenRouterClient) {}
 
   /**
    * Transforms a raw transcript into processed material content and optional quiz.
@@ -98,7 +98,7 @@ export class LlmService {
       totalChunks,
       settings,
     );
-    const response = await this.callGroq<AiChunkMapResponse>(
+    const response = await this.callOpenRouter<AiChunkMapResponse>(
       [
         { role: 'system', content: prompts.system },
         { role: 'user', content: prompts.user },
@@ -115,28 +115,32 @@ export class LlmService {
     settings: ProcessSettingsDto,
     isReduceStep: boolean,
   ): Promise<AiMaterialResponse> {
-    const messages: ChatCompletionMessageParam[] = [
+    const messages: OpenRouterChatMessage[] = [
       { role: 'system', content: buildMaterialSystemPrompt(settings) },
       {
         role: 'user',
-        content: buildMaterialUserPrompt(transcriptText, isReduceStep),
+        content: buildMaterialUserPrompt(
+          transcriptText,
+          isReduceStep,
+          settings,
+        ),
       },
     ];
 
-    return this.callGroq<AiMaterialResponse>(
+    return this.callOpenRouter<AiMaterialResponse>(
       messages,
       buildMaterialResponseFormat(settings),
       (value) => validateAiMaterialResponse(value, settings),
     );
   }
 
-  private async callGroq<T>(
-    messages: ChatCompletionMessageParam[],
+  private async callOpenRouter<T>(
+    messages: OpenRouterChatMessage[],
     responseFormat: ReturnType<typeof buildMaterialResponseFormat>,
     validate: (value: unknown) => value is T,
   ): Promise<T> {
     try {
-      const completion = await this.groqClient.createChatCompletion({
+      const completion = await this.openRouterClient.createChatCompletion({
         messages,
         response_format: responseFormat,
         temperature: CONFIG_TEMPERATURE,
@@ -154,11 +158,11 @@ export class LlmService {
 
       return parsed;
     } catch (error) {
-      throw this.mapGroqError(error);
+      throw this.mapLlmError(error);
     }
   }
 
-  private mapGroqError(error: unknown): Error {
+  private mapLlmError(error: unknown): Error {
     if (
       error instanceof InternalServerErrorException ||
       error instanceof BadGatewayException
