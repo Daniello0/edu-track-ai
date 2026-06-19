@@ -2,7 +2,7 @@
 
 > **Auto-generated.** Do not edit manually.
 > **Sources:** `backend/src/common/dto`, `backend/src/features/health/health-response.dto.ts`
-> **Generated at:** 2026-06-18T10:36:54.067Z
+> **Generated at:** 2026-06-19T09:38:23.913Z
 > **Manual reference:** [schemas-design.md](./schemas-design.md) §4 (API JSON Schemas)
 
 Наследование (`<|--`), композиция (`*--`). Классы с префиксом `Abstract` — внутренние предки.
@@ -224,6 +224,18 @@ classDiagram
         +bestScore: number
         +status: MaterialStatus
         +answers: GradedQuizAnswerDtoArray
+    }
+
+    class TranscriptFetchRequestDto {
+        +videoUrl: string
+    }
+
+    class TranscriptFetchResponseDto {
+        +videoId: string
+        +text: string
+        +languageCode: string
+        +isGenerated: boolean
+        +durationSeconds: number
     }
 
     class UpdateMaterialStatusDto {
@@ -572,6 +584,25 @@ classDiagram
     AbstractProcessMetadataDto <|-- AbstractMaterialMetadataDto
     AbstractProcessMetadataDto <|-- AbstractMaterialPayloadDto
     QuizQuestionPublicDto <|-- QuizQuestionDto
+```
+
+## Transcript
+
+```mermaid
+classDiagram
+    direction TB
+
+    class TranscriptFetchRequestDto {
+        +videoUrl: string
+    }
+
+    class TranscriptFetchResponseDto {
+        +videoId: string
+        +text: string
+        +languageCode: string
+        +isGenerated: boolean
+        +durationSeconds: number
+    }
 ```
 
 ## User

@@ -1,10 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  NoTranscriptFound,
-  TranscriptsDisabled,
-  VideoUnavailable,
-} from '@hallelx/youtube-transcript';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   TRANSCRIPT_FETCH_FAILED_MESSAGE,
@@ -14,6 +9,12 @@ import { YoutubeTranscriptClient } from './youtube-transcript.client';
 import { TranscriptService } from './transcript.service';
 
 const videoId = 'dQw4w9WgXcQ';
+
+function createYoutubeTranscriptError(name: string): Error {
+  const error = new Error(name);
+  error.name = name;
+  return error;
+}
 
 describe('TranscriptService', () => {
   let transcriptService: TranscriptService;
@@ -64,7 +65,7 @@ describe('TranscriptService', () => {
 
   it('throws BadRequestException when no transcript is found', async () => {
     youtubeTranscriptClient.fetch.mockRejectedValue(
-      new NoTranscriptFound(videoId, ['en'], { toString: () => '' }),
+      createYoutubeTranscriptError('YoutubeTranscriptNotAvailableError'),
     );
 
     await expect(
@@ -79,7 +80,7 @@ describe('TranscriptService', () => {
 
   it('throws BadRequestException when transcripts are disabled', async () => {
     youtubeTranscriptClient.fetch.mockRejectedValue(
-      new TranscriptsDisabled(videoId),
+      createYoutubeTranscriptError('YoutubeTranscriptDisabledError'),
     );
 
     await expect(transcriptService.fetchTranscript(videoId)).rejects.toThrow(
@@ -96,7 +97,7 @@ describe('TranscriptService', () => {
 
   it('throws BadRequestException for other transcript retrieval failures', async () => {
     youtubeTranscriptClient.fetch.mockRejectedValue(
-      new VideoUnavailable(videoId),
+      createYoutubeTranscriptError('YoutubeTranscriptVideoUnavailableError'),
     );
 
     await expect(
