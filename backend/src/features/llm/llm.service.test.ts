@@ -86,24 +86,29 @@ describe('LlmService', () => {
     expect(openRouterClient.createChatCompletion).toHaveBeenCalledTimes(1);
 
     const callArgs = openRouterClient.createChatCompletion.mock
-      .calls[0]?.[0] as {
-      response_format?: {
-        type: string;
-        json_schema?: {
-          strict?: boolean;
-          schema?: {
-            properties?: {
-              category?: { enum?: string[] };
-            };
+      .calls[0]?.[0] as OpenRouterChatCompletionCreateParams;
+
+    const systemMessage = callArgs.messages?.[0];
+    expect(systemMessage?.role).toBe('system');
+    expect(systemMessage?.content).toContain('educational content processor');
+    expect(callArgs.messages?.[1]?.role).toBe('user');
+
+    const responseFormat = callArgs.response_format as {
+      type: string;
+      json_schema?: {
+        strict?: boolean;
+        schema?: {
+          properties?: {
+            category?: { enum?: string[] };
           };
         };
       };
     };
 
-    expect(callArgs.response_format?.type).toBe('json_schema');
-    expect(callArgs.response_format?.json_schema?.strict).toBe(true);
+    expect(responseFormat?.type).toBe('json_schema');
+    expect(responseFormat?.json_schema?.strict).toBe(true);
     expect(
-      callArgs.response_format?.json_schema?.schema?.properties?.category?.enum,
+      responseFormat?.json_schema?.schema?.properties?.category?.enum,
     ).toEqual(Object.values(MaterialCategory));
     expect(result).toEqual({
       title: 'Intro to Algorithms',

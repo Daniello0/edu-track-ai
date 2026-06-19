@@ -119,7 +119,11 @@ export class LlmService {
       { role: 'system', content: buildMaterialSystemPrompt(settings) },
       {
         role: 'user',
-        content: buildMaterialUserPrompt(transcriptText, isReduceStep),
+        content: buildMaterialUserPrompt(
+          transcriptText,
+          isReduceStep,
+          settings,
+        ),
       },
     ];
 

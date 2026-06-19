@@ -8,6 +8,8 @@ import {
   buildMaterialResponseSchema,
 } from './llm.schema';
 import {
+  buildChunkMapPrompts,
+  buildMaterialSystemPrompt,
   chunkTranscript,
   mapAiResponseToResult,
   validateAiChunkMapResponse,
@@ -27,6 +29,62 @@ const noQuizSettings: ProcessSettingsDto = {
   ...narrativeSettings,
   hasQuiz: false,
 };
+
+describe('buildMaterialSystemPrompt', () => {
+  it('includes transcript cleanup and anti-hallucination rules', () => {
+    const prompt = buildMaterialSystemPrompt(narrativeSettings);
+
+    expect(prompt).toContain(
+      'Fix typos, punctuation, and transcription errors',
+    );
+    expect(prompt).toContain('Do not invent, omit, or paraphrase');
+  });
+
+  it('includes narrative format instructions for near-verbatim literary polish', () => {
+    const prompt = buildMaterialSystemPrompt(narrativeSettings);
+
+    expect(prompt).toContain('almost identical to the video transcript');
+    expect(prompt).toContain('roughly the same length as the subtitles');
+    expect(prompt).toContain('Remove ads, sponsorship segments');
+    expect(prompt).toContain('filler words');
+    expect(prompt).not.toContain('section headings (##)');
+  });
+
+  it('includes MaterialCategory selection guidance', () => {
+    const prompt = buildMaterialSystemPrompt(narrativeSettings);
+
+    expect(prompt).toContain('programming');
+    expect(prompt).toContain('arts');
+    expect(prompt).toContain('film');
+  });
+
+  it('includes quiz generation rules when quiz is enabled', () => {
+    const prompt = buildMaterialSystemPrompt(narrativeSettings);
+
+    expect(prompt).toContain('exactly 2 quiz questions');
+    expect(prompt).toContain('explicitly stated in the transcript');
+  });
+
+  it('instructs to return an empty quiz array when quiz is disabled', () => {
+    const prompt = buildMaterialSystemPrompt(noQuizSettings);
+
+    expect(prompt).toContain('empty quiz array');
+    expect(prompt).not.toContain('explicitly stated in the transcript');
+  });
+});
+
+describe('buildChunkMapPrompts', () => {
+  it('returns system and user prompts for a transcript chunk', () => {
+    const prompts = buildChunkMapPrompts('chunk text', 0, 3, narrativeSettings);
+
+    expect(prompts.system).toContain('transcript chunk');
+    expect(prompts.system).toContain(
+      'almost identical to the video transcript',
+    );
+    expect(prompts.user).toContain('chunk 1 of 3');
+    expect(prompts.user).toContain('chunk text');
+  });
+});
 
 describe('chunkTranscript', () => {
   it('returns a single chunk when text fits within the limit', () => {
