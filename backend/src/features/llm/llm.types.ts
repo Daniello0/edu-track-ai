@@ -2,14 +2,14 @@ import { MaterialCategory } from '../../common/enums/material-category.enum';
 import { ProcessSettingsDto } from '../../common/dto/process/process-settings.dto';
 import { QuizQuestion } from '../quiz/quiz.types';
 
-/** Raw quiz question shape returned by Groq structured output. */
+/** Raw quiz question shape returned by LLM structured output. */
 export interface AiQuizQuestion {
   question: string;
   options: string[];
   correctIndex: number;
 }
 
-/** Raw structured output from Groq for a processed material. */
+/** Raw structured output from the LLM for a processed material. */
 export interface AiMaterialResponse {
   title: string;
   category: MaterialCategory;
@@ -17,7 +17,7 @@ export interface AiMaterialResponse {
   quiz: AiQuizQuestion[];
 }
 
-/** Raw structured output from Groq when mapping a transcript chunk. */
+/** Raw structured output from the LLM when mapping a transcript chunk. */
 export interface AiChunkMapResponse {
   processedText: string;
 }

@@ -9,8 +9,6 @@ import { MaterialCategory } from '../../common/enums/material-category.enum';
 import { Language } from '../../common/enums/language.enum';
 import { MaterialFormat } from '../../common/enums/material-format.enum';
 import { ProcessSettingsDto } from '../../common/dto/process/process-settings.dto';
-import type { ChatCompletionCreateParamsNonStreaming } from 'groq-sdk/resources/chat/completions';
-import { GroqClient } from './groq.client';
 import {
   LLM_INVALID_RESPONSE_MESSAGE,
   LLM_PROCESSING_FAILED_MESSAGE,
@@ -19,6 +17,8 @@ import {
 } from './llm.constants';
 import { LlmService } from './llm.service';
 import { validateAiMaterialResponse } from './llm.utils';
+import { OpenRouterClient } from './openrouter.client';
+import type { OpenRouterChatCompletionCreateParams } from './openrouter.types';
 
 const narrativeSettings: ProcessSettingsDto = {
   format: MaterialFormat.NARRATIVE,
@@ -45,22 +45,22 @@ const aiMaterialResponse = {
 describe('LlmService', () => {
   let llmService: LlmService;
 
-  const groqClient = {
+  const openRouterClient = {
     createChatCompletion: vi.fn(),
-    getModel: vi.fn().mockReturnValue('openai/gpt-oss-20b'),
+    getModel: vi.fn().mockReturnValue('openrouter/free'),
   };
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    groqClient.createChatCompletion.mockReset();
-    groqClient.getModel.mockReturnValue('openai/gpt-oss-20b');
+    openRouterClient.createChatCompletion.mockReset();
+    openRouterClient.getModel.mockReturnValue('openrouter/free');
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         LlmService,
         {
-          provide: GroqClient,
-          useValue: groqClient,
+          provide: OpenRouterClient,
+          useValue: openRouterClient,
         },
         {
           provide: ConfigService,
@@ -72,8 +72,8 @@ describe('LlmService', () => {
     llmService = module.get<LlmService>(LlmService);
   });
 
-  it('processes short videos with a single Groq structured output call', async () => {
-    groqClient.createChatCompletion.mockResolvedValue({
+  it('processes short videos with a single OpenRouter structured output call', async () => {
+    openRouterClient.createChatCompletion.mockResolvedValue({
       choices: [{ message: { content: JSON.stringify(aiMaterialResponse) } }],
     });
 
@@ -83,9 +83,10 @@ describe('LlmService', () => {
       settings: narrativeSettings,
     });
 
-    expect(groqClient.createChatCompletion).toHaveBeenCalledTimes(1);
+    expect(openRouterClient.createChatCompletion).toHaveBeenCalledTimes(1);
 
-    const callArgs = groqClient.createChatCompletion.mock.calls[0]?.[0] as {
+    const callArgs = openRouterClient.createChatCompletion.mock
+      .calls[0]?.[0] as {
       response_format?: {
         type: string;
         json_schema?: {
@@ -128,8 +129,8 @@ describe('LlmService', () => {
       processedText: 'Merged long lecture notes.',
     };
 
-    groqClient.createChatCompletion.mockImplementation(
-      (params: ChatCompletionCreateParamsNonStreaming) => {
+    openRouterClient.createChatCompletion.mockImplementation(
+      (params: Omit<OpenRouterChatCompletionCreateParams, 'model'>) => {
         const responseFormat = params.response_format;
         const schemaName =
           responseFormat?.type === 'json_schema'
@@ -162,9 +163,9 @@ describe('LlmService', () => {
       settings: narrativeSettings,
     });
 
-    expect(groqClient.createChatCompletion.mock.calls.length).toBeGreaterThan(
-      1,
-    );
+    expect(
+      openRouterClient.createChatCompletion.mock.calls.length,
+    ).toBeGreaterThan(1);
     expect(result.content).toBe('Merged long lecture notes.');
   });
 
@@ -180,7 +181,7 @@ describe('LlmService', () => {
       quiz: [],
     };
 
-    groqClient.createChatCompletion.mockResolvedValue({
+    openRouterClient.createChatCompletion.mockResolvedValue({
       choices: [{ message: { content: JSON.stringify(noQuizResponse) } }],
     });
 
@@ -193,8 +194,8 @@ describe('LlmService', () => {
     expect(result.quiz).toBeNull();
   });
 
-  it('throws when Groq returns invalid JSON', async () => {
-    groqClient.createChatCompletion.mockResolvedValue({
+  it('throws when OpenRouter returns invalid JSON', async () => {
+    openRouterClient.createChatCompletion.mockResolvedValue({
       choices: [{ message: { content: 'not-json' } }],
     });
 
@@ -209,8 +210,8 @@ describe('LlmService', () => {
     });
   });
 
-  it('throws when Groq response fails schema validation', async () => {
-    groqClient.createChatCompletion.mockResolvedValue({
+  it('throws when OpenRouter response fails schema validation', async () => {
+    openRouterClient.createChatCompletion.mockResolvedValue({
       choices: [
         {
           message: {
@@ -234,8 +235,8 @@ describe('LlmService', () => {
     ).rejects.toBeInstanceOf(InternalServerErrorException);
   });
 
-  it('throws when Groq API call fails', async () => {
-    groqClient.createChatCompletion.mockRejectedValue(
+  it('throws when OpenRouter API call fails', async () => {
+    openRouterClient.createChatCompletion.mockRejectedValue(
       new Error('network error'),
     );
 

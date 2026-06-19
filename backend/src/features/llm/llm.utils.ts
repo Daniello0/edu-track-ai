@@ -36,7 +36,7 @@ export function chunkTranscript(text: string, maxChars: number): string[] {
 }
 
 /**
- * Maps Groq structured output to the internal material processing result.
+ * Maps LLM structured output to the internal material processing result.
  */
 export function mapAiResponseToResult(
   response: AiMaterialResponse,

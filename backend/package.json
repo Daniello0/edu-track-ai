@@ -28,7 +28,6 @@
     "class-validator": "^0.15.1",
     "firebase": "^12.14.0",
     "firebase-admin": "^14.0.0",
-    "groq-sdk": "^1.2.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.21.0",
