@@ -1,0 +1,29 @@
+.main-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.main-page-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.main-page-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.main-page-status,
+.main-page-error {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.main-page-error {
+  color: #c0392b;
+}

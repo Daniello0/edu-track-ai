@@ -1,0 +1,64 @@
+.processing-settings-fieldset {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #ccc;
+}
+
+.processing-settings-legend {
+  padding: 0 0.25rem;
+}
+
+.processing-settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.processing-settings-group-label {
+  font-size: 0.875rem;
+}
+
+.processing-settings-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.processing-settings-segment-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.processing-settings-select {
+  max-width: 12rem;
+  padding: 0.5rem;
+  font: inherit;
+}
+
+.processing-settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.processing-settings-quiz-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.processing-settings-number-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.processing-settings-number-field input {
+  width: 5rem;
+  padding: 0.5rem;
+  font: inherit;
+}

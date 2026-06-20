@@ -8,7 +8,7 @@ You must follow these conventions for all TypeScript, JavaScript, TSX, and JSX f
 
 ## Technical Stack
 - **Language**: TypeScript (Strict mode, no implicit 'any').
-- **Frameworks and Technologies**: Nest.js, PostgreSQL, TypeORM (Lib), Module CSS, Axios (Lib), class-validator (Lib), class-transformer (Lib), Yup (Lib, frontend), React, Lucide React (Lib, frontend), Docker, Swagger, Zustand (Lib), Vite (Lib).
+- **Frameworks and Technologies**: Nest.js, PostgreSQL, TypeORM (Lib), Module CSS, Axios (Lib), class-validator (Lib), class-transformer (Lib), Yup (Lib, frontend), React, React Router (Lib, frontend), Lucide React (Lib, frontend), Docker, Swagger, Zustand (Lib), Vite (Lib).
 - **Testing**: Vitest for unit tests.
   - Place tests next to the source code using `*.test.ts` naming.
 - **Linting/Formatting**: ESLint + Prettier.
@@ -17,6 +17,7 @@ You must follow these conventions for all TypeScript, JavaScript, TSX, and JSX f
 - **Variables & Functions**: camelCase.
 - **Components & Types/Interfaces**: PascalCase.
 - **Files**: kebab-case (e.g., `user-profile.tsx`).
+- **Domain values (FE & BE)**: TypeScript `enum` in `src/common/enums/` (e.g., `MaterialFormat`, `Language`). Do not model the same domain values as string-literal unions in types or stores — use the enum type instead.
 
 ## API, Error Handling & Data Validation
 - **JSDoc**: Document all public functions using JSDoc.
@@ -58,6 +59,11 @@ Organized by tool type for use across the entire application:
 *   **utils/**
     *   `validators.utils.ts`
     *   `formatters.utils.ts`
+*   **components/** *(frontend)*
+    *   `url-input.tsx`
+    *   `processing-settings.tsx`
+    *   `main-action-button.tsx`
+    *   `background-shape.tsx`
 
 **2. Business Features (`src/features/`):**
 Each directory represents a standalone module. A feature may start with only an entity; controller, service, and module are added when the API layer is needed.

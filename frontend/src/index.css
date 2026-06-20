@@ -1,0 +1,17 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  line-height: 1.5;
+  color: #2d3436;
+  background: #fff;
+}
+
+#root {
+  min-height: 100vh;
+}

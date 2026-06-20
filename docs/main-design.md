@@ -69,7 +69,15 @@ backend/
         ├── refresh-token/   # entity
         ├── health/
         └── process/         # POST /api/process (transcript + llm + persist/pending)
-frontend/                    # planned — каталог в репозитории пока отсутствует
+frontend/                    # React + Vite SPA (React Router)
+└── src/
+    ├── common/              # enums, constants, types, components, utils, stores
+    └── features/
+        ├── main-page/       # главная страница (main.tsx, main.service.ts, …)
+        ├── reader/          # planned
+        ├── quiz/            # planned
+        ├── profile/         # planned
+        └── auth/            # planned
 docs/                        # Продуктовая и техническая документация
 ```
 
@@ -185,7 +193,8 @@ JSON-схемы запросов и ответов — в [schemas-design.md](./
 | **Дедупликация** | `settings_hash` в `materials` (per user) | Повторная обработка того же видео с теми же настройками возвращает существующий материал без вызова AI. |
 | **Аутентификация** | Firebase Auth + JWT (access + refresh) | Firebase управляет Google/email-потоками; NestJS `JwtAuthGuard` защищает API. |
 | **Гостевая сессия** | `pendingId` + UI-данные в `sessionStorage` | Бэкенд хранит полный результат во in-memory pending store (TTL 24 ч); после входа — `claim-pending` по `pendingId`. |
-| **Состояние UI** | Zustand | Лёгкое глобальное состояние для шагов обработки и reader/quiz. |
+| **Состояние UI** | Zustand | Лёгкое глобальное состояние для шагов обработки и reader/quiz. Доменные поля типизируются через `enum` из `common/enums/` (единое соглашение с бэкендом). |
+| **Маршрутизация** | React Router | Клиентская навигация между экранами (`/`, reader, quiz, profile — по мере реализации). |
 | **Категории** | Enum `MaterialCategory` + structured output AI | Единообразная классификация материалов для дашборда и фильтрации. |
 | **Валидация API** | `class-validator` + `class-transformer` | Согласовано с конвенциями бэкенда. |
 | **ORM** | TypeORM (`synchronize: true` в dev) | Entity — в отдельных фичах (`user/`, `material/`, `quiz/`, …); инфраструктура — в `features/database/`. DTO — `common/dto/` ([диаграмма](./mermaid-dto-class-diagram.md)), enums — `common/enums/`. Схема API — в [schemas-design.md](./schemas-design.md). |

@@ -1,0 +1,27 @@
+.main-action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font: inherit;
+  cursor: pointer;
+}
+
+.main-action-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.main-action-button-spinner {
+  animation: main-action-button-spin 1s linear infinite;
+}
+
+@keyframes main-action-button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

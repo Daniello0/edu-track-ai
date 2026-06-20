@@ -588,6 +588,8 @@ AI возвращает строго валидный JSON через OpenRouter
 | `MainActionButton` | Кнопка «Читать» с состоянием загрузки |
 | `BackgroundShape` | Анимированный декоративный элемент фона |
 
+> Реализация перечисленных UI-компонентов — в `frontend/src/common/components/` (переиспользуются между фичами, аналогично DTO на бэкенде).
+
 ### Feature: `reader`
 
 | Компонент | Ответственность |
@@ -623,6 +625,10 @@ AI возвращает строго валидный JSON через OpenRouter
 
 | Компонент | Ответственность |
 | :--- | :--- |
+| `UrlInput` | Поле ввода URL (переиспользуемый) |
+| `ProcessingSettings` | Блок настроек обработки видео |
+| `MainActionButton` | Primary-кнопка с состоянием загрузки |
+| `BackgroundShape` | Декоративный фон |
 | `Header` | Логотип, тема, авторизация |
 | `ThemeToggle` | Переключатель light/dark |
 | `Toast` | Уведомления об ошибках |
@@ -633,17 +639,30 @@ AI возвращает строго валидный JSON через OpenRouter
 ## 7. UI State Schema (Zustand)
 
 ```typescript
-type MaterialCategory =
-  | 'programming'
-  | 'mathematics'
-  | 'science'
-  | 'humanities'
-  | 'languages'
-  | 'business'
-  | 'arts'
-  | 'health'
-  | 'technology'
-  | 'other';
+enum MaterialCategory {
+  PROGRAMMING = 'programming',
+  MATHEMATICS = 'mathematics',
+  SCIENCE = 'science',
+  HUMANITIES = 'humanities',
+  LANGUAGES = 'languages',
+  BUSINESS = 'business',
+  ARTS = 'arts',
+  HEALTH = 'health',
+  TECHNOLOGY = 'technology',
+  OTHER = 'other',
+}
+
+enum ProcessStep {
+  IDLE = 'idle',
+  TRANSCRIBING = 'transcribing',
+  AI_PROCESSING = 'ai_processing',
+  COMPLETED = 'completed',
+}
+
+enum Theme {
+  LIGHT = 'light',
+  DARK = 'dark',
+}
 
 interface QuizQuestionPublic {
   question: string;
@@ -653,7 +672,7 @@ interface QuizQuestionPublic {
 interface AppState {
   currentProcess: {
     isLoading: boolean;
-    step: 'idle' | 'transcribing' | 'ai_processing' | 'completed';
+    step: ProcessStep;
     error: string | null;
   };
   reader: {
@@ -663,13 +682,13 @@ interface AppState {
     title: string | null;
     content: string | null;
     category: MaterialCategory | null;
-    format: 'narrative' | 'summary' | null;
-    summaryLength: 'short' | 'medium' | 'long' | null;
-    language: 'ru' | 'en' | 'original' | null;
+    format: MaterialFormat | null;
+    summaryLength: SummaryLength | null;
+    language: Language | null;
     quiz: QuizQuestionPublic[] | null;
     isPersisted: boolean;
   };
-  theme: 'light' | 'dark';
+  theme: Theme;
   user: {
     id: string | null;
     email: string | null;
@@ -680,6 +699,8 @@ interface AppState {
   };
 }
 ```
+
+> **Соглашение:** доменные значения на фронтенде и бэкенде описываются через `enum` в `common/enums/` (см. §1). В типах состояния и DTO не используются string-literal unions для тех же значений.
 
 ### Guest Session (`sessionStorage`)
 
@@ -694,9 +715,9 @@ interface PendingMaterial {
   title: string;
   content: string;
   category: MaterialCategory;
-  format: 'narrative' | 'summary';
-  summaryLength: 'short' | 'medium' | 'long' | null;
-  language: 'ru' | 'en' | 'original';
+  format: MaterialFormat;
+  summaryLength: SummaryLength | null;
+  language: Language;
   quiz: QuizQuestionPublic[] | null;
 }
 ```
