@@ -18,7 +18,7 @@
 | :--- | :--- |
 | Frontend | React, Vite, Module CSS, Yup, Lucide React, Zustand, Firebase Auth |
 | Backend | NestJS, PostgreSQL, class-validator, Swagger, Firebase Admin SDK, JWT |
-| AI | Groq |
+| AI | OpenRouter |
 | Инфраструктура | Docker, Vitest, ESLint, Prettier |
 
 Подробные конвенции кода — в [.cursor/rules/project-conventions.mdc](.cursor/rules/project-conventions.mdc).

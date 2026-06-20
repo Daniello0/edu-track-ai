@@ -42,7 +42,7 @@
 
 Идентификаторы — `uuid`, генерируются через `uuid_generate_v4()`.
 
-> **ORM:** TypeORM entity-классы — в отдельных фичах `backend/src/features/` (`user/`, `material/`, `quiz/`, `quiz-attempt/`, `refresh-token/`). Подключение и `synchronize` — в `features/database/`. DTO — в `backend/src/common/dto/` (по домену, напр. `dto/user/`), enums — в `backend/src/common/enums/`. Диаграмма DTO-классов — [mermaid-dto-class-diagram.md](./mermaid-dto-class-diagram.md). В dev-режиме `synchronize: true` — схема автоматически приводится к entity-описанию. Переменные подключения — в `backend/.env.example` (`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`, `DB_NAME`).
+> **ORM:** TypeORM entity-классы — в отдельных фичах `backend/src/features/` (`user/`, `material/`, `quiz/`, `quiz-attempt/`, `refresh-token/`). Подключение и `synchronize` — в `features/database/`. DTO — в `backend/src/common/dto/` (по домену, напр. `dto/user/`), enums — в `backend/src/common/enums/`. Диаграмма DTO-классов — [mermaid-dto-class-diagram.md](./mermaid-dto-class-diagram.md). В dev-режиме `synchronize: true` — схема автоматически приводится к entity-описанию. Переменные окружения — в `backend/.env.example` (БД, JWT, Firebase, OpenRouter).
 
 > **Принцип персистентности:** записи в БД создаются только для авторизованных пользователей. Гостевые запросы не оставляют следов в PostgreSQL.
 
@@ -251,9 +251,37 @@ sequenceDiagram
 
 **Защищённые маршруты:** заголовок `Authorization: Bearer <accessToken>`.
 
-### POST `/api/process` *(planned — контроллер ещё не подключён)*
+### POST `/api/transcript/fetch` *(dev)*
 
-**Auth:** опционально (`OptionalJwtAuthGuard`). Сервисы `transcript` и `llm` реализованы; оркестрация — в фиче `process`.
+**Auth:** не требуется.
+
+Тестовый эндпоинт для проверки извлечения субтитров через `TranscriptService` (ручные и автосубтитры).
+
+**Request:**
+
+```json
+{
+  "videoUrl": "https://www.youtube.com/watch?v=VIDEO_ID"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "videoId": "VIDEO_ID",
+  "text": "string",
+  "languageCode": "en",
+  "isGenerated": true,
+  "durationSeconds": 212
+}
+```
+
+---
+
+### POST `/api/process`
+
+**Auth:** опционально (`OptionalJwtAuthGuard`). Оркестрация — `ProcessService` (transcript → llm → persist/pending).
 
 **Request:**
 
@@ -519,9 +547,11 @@ sequenceDiagram
 
 ---
 
-## 5. AI Structured Output (Groq)
+## 5. AI Structured Output (OpenRouter)
 
-AI возвращает строго валидный JSON. Бэкенд маппит `processedText` → `content`, `correctIndex` → `correctAnswerIndex` (поле **server-internal**, в API-ответах не отдаётся).
+AI возвращает строго валидный JSON через OpenRouter Chat Completions API (`response_format.json_schema`, `strict: true`). Клиент — `OpenRouterClient`; маршрутизация с `provider.require_parameters: true`, чтобы использовать только провайдеров, поддерживающих все параметры запроса. Переменные окружения — `OPEN_ROUTER_API_KEY`, `OPEN_ROUTER_MODEL` (по умолчанию `openrouter/free`).
+
+Бэкенд маппит `processedText` → `content`, `correctIndex` → `correctAnswerIndex` (поле **server-internal**, в API-ответах не отдаётся).
 
 Поле `category` — **enum** `MaterialCategory`; AI обязан выбрать ровно одно значение из списка. В JSON Schema для structured output передаётся `enum` со всеми допустимыми значениями.
 
