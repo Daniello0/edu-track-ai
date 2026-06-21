@@ -590,14 +590,14 @@ AI возвращает строго валидный JSON через OpenRouter
 
 > Реализация перечисленных UI-компонентов — в `frontend/src/common/components/` (переиспользуются между фичами, аналогично DTO на бэкенде).
 
-**Frontend API services** (axios, `baseURL: /api`). Сервисы reader/quiz/profile реализованы, но пока не подключены к UI:
+**Frontend API services** (axios, `baseURL: /api`). UI вызывает сервисы через feature-утилиты (`*-library.utils`, `reader-actions.utils`, `quiz-submit.utils`):
 
 | Feature | Файл | Методы API |
 | :--- | :--- | :--- |
 | `main-page` | `main.service.ts` | `POST /process` |
 | `auth` | `auth.service.ts` | `POST /auth/session`, `/refresh`, `/logout` |
 | `library` | `library.service.ts` | `POST /library/claim-pending` |
-| `reader` | `reader.service.ts` | `GET /library/:id` |
+| `reader` | `reader.service.ts` | `GET /library/:id`; удаление — `DELETE /library/:id` через `reader-actions.utils` |
 | `quiz` | `quiz.service.ts` | `POST /library/:id/quiz/attempts` |
 | `profile` | `profile.service.ts` | `GET /library`, `PATCH /library/:id/status`, `DELETE /library/:id` |
 

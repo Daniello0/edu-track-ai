@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '../../common/constants/app.constants';
 import {
@@ -7,7 +8,9 @@ import {
 import { AuthModalVariant } from '../../common/enums/auth-modal-variant.enum';
 import { useAppStore } from '../../common/stores/app.store';
 import { formatLongDate } from '../../common/utils/formatters.utils';
+import { deleteReaderMaterial } from './reader-actions.utils';
 import { renderReaderContent } from './reader-content.utils';
+import { hasQuizInReader, hasReadableContent } from './reader.utils';
 import './reader.styles.css';
 
 /**
@@ -16,21 +19,29 @@ import './reader.styles.css';
 export function ReaderPage() {
   const navigate = useNavigate();
   const reader = useAppStore((state) => state.reader);
+  const accessToken = useAppStore((state) => state.auth.accessToken);
   const resetReader = useAppStore((state) => state.resetReader);
   const openAuthModal = useAppStore((state) => state.openAuthModal);
 
-  if (!reader.title || !reader.content) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  if (!hasReadableContent(reader)) {
     return <Navigate to={APP_ROUTES.HOME} replace />;
   }
 
   const categoryLabel = reader.category
     ? MATERIAL_CATEGORY_LABELS[reader.category]
     : null;
-  const hasQuiz = Boolean(reader.quiz?.length);
+  const hasQuiz = hasQuizInReader(reader);
 
   const handleDelete = (): void => {
-    resetReader();
-    navigate(APP_ROUTES.HOME);
+    void deleteReaderMaterial(reader, accessToken, {
+      resetReader,
+      navigateHome: () => navigate(APP_ROUTES.HOME),
+      setError: setActionError,
+      setIsDeleting,
+    });
   };
 
   const handleGoToQuiz = (): void => {
@@ -61,7 +72,13 @@ export function ReaderPage() {
           </div>
         </header>
 
-        <div className="reader-body">{renderReaderContent(reader.content)}</div>
+        {actionError ? (
+          <p className="reader-action-error">{actionError}</p>
+        ) : null}
+
+        <div className="reader-body">
+          {renderReaderContent(reader.content!)}
+        </div>
       </article>
 
       <footer className="reader-action-bar">
@@ -90,9 +107,10 @@ export function ReaderPage() {
         <button
           type="button"
           className="reader-action-secondary"
+          disabled={isDeleting}
           onClick={handleDelete}
         >
-          Удалить
+          {isDeleting ? 'Удаляем…' : 'Удалить'}
         </button>
       </footer>
     </div>

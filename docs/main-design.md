@@ -110,9 +110,9 @@ OpenAPI/Swagger UI: `GET /docs`.
 | Feature | Статус | Назначение |
 | :--- | :--- | :--- |
 | `main-page` | ✓ UI + API | Ввод URL, настройки обработки, `POST /api/process`. |
-| `reader` | ✓ UI, service | Режим чтения; `reader.service` — `GET /api/library/:id` (не подключён к UI). |
-| `quiz` | ✓ UI, service | Прохождение теста; `quiz.service` — `POST /api/library/:id/quiz/attempts` (не подключён к UI). |
-| `profile` | ✓ UI placeholder, service | Дашборд и библиотека; `profile.service` — list/status/delete (не подключён к UI). |
+| `reader` | ✓ UI + service | Режим чтения; `reader.service` — `GET /api/library/:id`; удаление через `profile.service`. |
+| `quiz` | ✓ UI + service | Прохождение теста; `quiz.service` — `POST /api/library/:id/quiz/attempts` для сохранённых материалов. |
+| `profile` | ✓ UI + service | Дашборд и библиотека; `profile.service` — list/status/delete; «Продолжить» → `reader.service`. |
 | `library` | ✓ service | `claim-pending` после авторизации гостя. |
 | `auth` | ✓ UI + API | Firebase Auth, JWT-сессия, модальное окно для гостей. |
 

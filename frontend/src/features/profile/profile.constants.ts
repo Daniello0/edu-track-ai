@@ -21,6 +21,5 @@ export const PROFILE_EMPTY_STATS_PLACEHOLDER = '—';
 export const PROFILE_EMPTY_LIBRARY_MESSAGE =
   'Здесь появятся сохранённые материалы после обработки видео.';
 
-/** Message shown when profile data has not been loaded from the API yet. */
-export const PROFILE_LIBRARY_PENDING_MESSAGE =
-  'Библиотека будет доступна после подключения загрузки данных.';
+/** Loading message for profile library fetch. */
+export const PROFILE_LOADING_MESSAGE = 'Загружаем библиотеку…';

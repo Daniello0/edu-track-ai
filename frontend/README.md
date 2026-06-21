@@ -9,9 +9,9 @@ React + Vite SPA для EduTrack AI. Организация кода — feature
 | `main-page` | ✓ | `main.service.ts` → `POST /api/process` |
 | `auth` | ✓ | `auth.service.ts`, `firebase-auth.service.ts` |
 | `library` | — | `library.service.ts` → `POST /api/library/claim-pending` |
-| `reader` | ✓ | `reader.service.ts` → `GET /api/library/:id` *(не подключён)* |
-| `quiz` | ✓ | `quiz.service.ts` → `POST /api/library/:id/quiz/attempts` *(не подключён)* |
-| `profile` | placeholder | `profile.service.ts` → library list/status/delete *(не подключён)* |
+| `reader` | ✓ | `reader.service.ts` → `GET /api/library/:id`; удаление — `DELETE /library/:id` |
+| `quiz` | ✓ | `quiz.service.ts` → `POST /api/library/:id/quiz/attempts` |
+| `profile` | ✓ | `profile.service.ts` → library list; «Продолжить» → reader |
 
 ## Scripts
 

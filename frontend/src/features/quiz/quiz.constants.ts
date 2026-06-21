@@ -17,3 +17,11 @@ export const QUIZ_VALIDATION_MESSAGES = {
   INVALID_QUESTION_INDEX: 'Некорректный номер вопроса.',
   INVALID_OPTION_INDEX: 'Некорректный номер варианта ответа.',
 } as const;
+
+/** Quiz UI messages for result review. */
+export const QUIZ_RESULT_MESSAGES = {
+  GUEST_NOTE:
+    'Верифицированная оценка появится после сохранения материала в библиотеку.',
+  INCORRECT_ANSWER_PREFIX: 'Ваш ответ:',
+  REVIEW_TITLE: 'Разбор ошибок',
+} as const;
