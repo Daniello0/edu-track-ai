@@ -1,16 +1,11 @@
-import axios from 'axios';
+import { getApiClient } from '../axios/axios.client';
 import { LIBRARY_API_ROUTES } from './library.constants';
 import type {
   ClaimPendingRequest,
   MaterialSummaryResponse,
 } from './library.types';
 
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const apiClient = getApiClient();
 
 /**
  * Persists a guest-processed material after authentication.

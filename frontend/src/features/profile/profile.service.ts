@@ -1,18 +1,12 @@
-import axios from 'axios';
 import type { MaterialSummaryResponse } from '../library/library.types';
+import { getApiClient } from '../axios/axios.client';
 import { PROFILE_API_ROUTES } from './profile.constants';
 import type {
   LibraryListResponse,
   UpdateMaterialStatusRequest,
 } from './profile.types';
 
-// FIXME: DRY and SRP violation - move axios creation to a separate file.
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const apiClient = getApiClient();
 
 /**
  * Fetches the authenticated user's saved materials.
@@ -59,11 +53,4 @@ export async function deleteMaterial(
   await apiClient.delete(PROFILE_API_ROUTES.DELETE(materialId), {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
-}
-
-/**
- * Creates an axios client instance for API calls (used in tests).
- */
-export function getProfileApiClient(): typeof apiClient {
-  return apiClient;
 }

@@ -42,14 +42,12 @@ const statusResponse = {
   isPersisted: true,
 };
 
-vi.mock('axios', () => ({
-  default: {
-    create: vi.fn(() => ({
-      get: (...args: unknown[]) => mockGet(...args),
-      patch: (...args: unknown[]) => mockPatch(...args),
-      delete: (...args: unknown[]) => mockDelete(...args),
-    })),
-  },
+vi.mock('../axios/axios.client', () => ({
+  getApiClient: () => ({
+    get: (...args: unknown[]) => mockGet(...args),
+    patch: (...args: unknown[]) => mockPatch(...args),
+    delete: (...args: unknown[]) => mockDelete(...args),
+  }),
 }));
 
 describe('profile.service', () => {

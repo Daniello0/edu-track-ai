@@ -1,14 +1,8 @@
-import axios from 'axios';
+import { getApiClient } from '../axios/axios.client';
 import { READER_API_ROUTES } from './reader.constants';
 import type { LibraryDetailResponse } from './reader.types';
 
-// FIXME: DRY and SRP violation - move axios creation to a separate file.
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const apiClient = getApiClient();
 
 /**
  * Fetches full material content and quiz for the reader screen.
@@ -25,11 +19,4 @@ export async function fetchLibraryMaterialDetail(
   );
 
   return response.data;
-}
-
-/**
- * Creates an axios client instance for API calls (used in tests).
- */
-export function getReaderApiClient(): typeof apiClient {
-  return apiClient;
 }

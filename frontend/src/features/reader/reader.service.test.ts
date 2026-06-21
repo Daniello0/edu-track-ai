@@ -25,12 +25,10 @@ const libraryDetail: LibraryDetailResponse = {
   lastViewedAt: '2026-06-11T12:00:00.000Z',
 };
 
-vi.mock('axios', () => ({
-  default: {
-    create: vi.fn(() => ({
-      get: (...args: unknown[]) => mockGet(...args),
-    })),
-  },
+vi.mock('../axios/axios.client', () => ({
+  getApiClient: () => ({
+    get: (...args: unknown[]) => mockGet(...args),
+  }),
 }));
 
 describe('reader.service', () => {

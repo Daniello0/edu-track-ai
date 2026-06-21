@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { getApiClient } from '../axios/axios.client';
 import { AUTH_API_ROUTES } from './auth.constants';
 import type {
   AuthLogoutRequest,
@@ -8,12 +8,7 @@ import type {
   AuthSessionResponse,
 } from './auth.types';
 
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const apiClient = getApiClient();
 
 /**
  * Exchanges a Firebase ID token for API access and refresh tokens.
@@ -51,11 +46,4 @@ export async function refreshAuthSession(
 export async function logoutAuthSession(refreshToken: string): Promise<void> {
   const payload: AuthLogoutRequest = { refreshToken };
   await apiClient.post<void>(AUTH_API_ROUTES.LOGOUT, payload);
-}
-
-/**
- * Creates an axios client instance for API calls (used in tests).
- */
-export function getAuthApiClient(): typeof apiClient {
-  return apiClient;
 }

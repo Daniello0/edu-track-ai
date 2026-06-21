@@ -41,7 +41,7 @@ backend/
 frontend/
 └── src/
     ├── common/          # enums, components, stores, utils
-    └── features/        # main-page, reader, quiz, profile, auth, library
+    └── features/        # main-page, axios, reader, quiz, profile, auth, library
 docs/                    # Продуктовая и техническая документация
 ```
 

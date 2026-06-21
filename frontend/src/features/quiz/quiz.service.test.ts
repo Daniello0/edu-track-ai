@@ -21,12 +21,10 @@ const submitResponse: SubmitQuizAttemptResponse = {
   ],
 };
 
-vi.mock('axios', () => ({
-  default: {
-    create: vi.fn(() => ({
-      post: (...args: unknown[]) => mockPost(...args),
-    })),
-  },
+vi.mock('../axios/axios.client', () => ({
+  getApiClient: () => ({
+    post: (...args: unknown[]) => mockPost(...args),
+  }),
 }));
 
 describe('quiz.service', () => {

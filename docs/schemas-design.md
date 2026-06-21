@@ -590,10 +590,11 @@ AI возвращает строго валидный JSON через OpenRouter
 
 > Реализация перечисленных UI-компонентов — в `frontend/src/common/components/` (переиспользуются между фичами, аналогично DTO на бэкенде).
 
-**Frontend API services** (axios, `baseURL: /api`). UI вызывает сервисы через feature-утилиты (`*-library.utils`, `reader-actions.utils`, `quiz-submit.utils`):
+**Frontend API services** — единый axios-клиент в `frontend/src/features/axios/` (`axios.client.ts`, `baseURL: /api`). Feature-сервисы импортируют `getApiClient()`. UI вызывает сервисы через feature-утилиты (`*-library.utils`, `reader-actions.utils`, `quiz-submit.utils`):
 
 | Feature | Файл | Методы API |
 | :--- | :--- | :--- |
+| `axios` | `axios.client.ts` | Shared HTTP client |
 | `main-page` | `main.service.ts` | `POST /process` |
 | `auth` | `auth.service.ts` | `POST /auth/session`, `/refresh`, `/logout` |
 | `library` | `library.service.ts` | `POST /library/claim-pending` |

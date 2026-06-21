@@ -74,6 +74,7 @@ frontend/                    # React + Vite SPA (React Router)
     ├── common/              # enums, constants, types, components, utils, stores
     └── features/
         ├── main-page/       # главная страница (main.tsx, main.service.ts, …)
+        ├── axios/           # shared axios client (baseURL /api)
         ├── reader/          # types, utils, service (GET /api/library/:id)
         ├── quiz/            # types, utils, service (POST quiz attempts)
         ├── profile/         # types, utils, service (library list/status/delete)
@@ -109,6 +110,7 @@ OpenAPI/Swagger UI: `GET /docs`.
 
 | Feature | Статус | Назначение |
 | :--- | :--- | :--- |
+| `axios` | ✓ client | Shared HTTP client (`getApiClient()`, `baseURL: /api`). |
 | `main-page` | ✓ UI + API | Ввод URL, настройки обработки, `POST /api/process`. |
 | `reader` | ✓ UI + service | Режим чтения; `reader.service` — `GET /api/library/:id`; удаление через `profile.service`. |
 | `quiz` | ✓ UI + service | Прохождение теста; `quiz.service` — `POST /api/library/:id/quiz/attempts` для сохранённых материалов. |
