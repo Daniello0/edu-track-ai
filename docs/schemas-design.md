@@ -590,6 +590,17 @@ AI возвращает строго валидный JSON через OpenRouter
 
 > Реализация перечисленных UI-компонентов — в `frontend/src/common/components/` (переиспользуются между фичами, аналогично DTO на бэкенде).
 
+**Frontend API services** (axios, `baseURL: /api`). Сервисы reader/quiz/profile реализованы, но пока не подключены к UI:
+
+| Feature | Файл | Методы API |
+| :--- | :--- | :--- |
+| `main-page` | `main.service.ts` | `POST /process` |
+| `auth` | `auth.service.ts` | `POST /auth/session`, `/refresh`, `/logout` |
+| `library` | `library.service.ts` | `POST /library/claim-pending` |
+| `reader` | `reader.service.ts` | `GET /library/:id` |
+| `quiz` | `quiz.service.ts` | `POST /library/:id/quiz/attempts` |
+| `profile` | `profile.service.ts` | `GET /library`, `PATCH /library/:id/status`, `DELETE /library/:id` |
+
 ### Feature: `reader`
 
 | Компонент | Ответственность |

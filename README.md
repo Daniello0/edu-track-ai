@@ -40,8 +40,8 @@ backend/
     └── features/        # auth, process, library, …
 frontend/
 └── src/
-    ├── common/          # Header, Toast, ThemeToggle, …
-    └── features/        # main-page, reader, quiz, profile, auth
+    ├── common/          # enums, components, stores, utils
+    └── features/        # main-page, reader, quiz, profile, auth, library
 docs/                    # Продуктовая и техническая документация
 ```
 

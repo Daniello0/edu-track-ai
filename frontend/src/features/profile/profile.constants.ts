@@ -13,3 +13,14 @@ export const PROFILE_VALIDATION_MESSAGES = {
 
 /** Locale used for profile date formatting. */
 export const PROFILE_DATE_LOCALE = 'ru-RU';
+
+/** Placeholder when profile stats are not loaded yet. */
+export const PROFILE_EMPTY_STATS_PLACEHOLDER = '—';
+
+/** Message shown when the library list is empty. */
+export const PROFILE_EMPTY_LIBRARY_MESSAGE =
+  'Здесь появятся сохранённые материалы после обработки видео.';
+
+/** Message shown when profile data has not been loaded from the API yet. */
+export const PROFILE_LIBRARY_PENDING_MESSAGE =
+  'Библиотека будет доступна после подключения загрузки данных.';

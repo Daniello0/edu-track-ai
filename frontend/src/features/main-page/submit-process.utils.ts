@@ -16,6 +16,7 @@ export interface ProcessSubmissionHandlers {
   setProcessLoading: (isLoading: boolean, step?: ProcessStep) => void;
   setProcessError: (error: string | null) => void;
   setReaderMaterial: (reader: ReaderState) => void;
+  onProcessComplete?: () => void;
 }
 
 /**
@@ -58,6 +59,7 @@ export function applyProcessResponse(
 ): void {
   handlers.setReaderMaterial(mapProcessResponseToReaderState(response));
   storeGuestPendingMaterial(response);
+  handlers.onProcessComplete?.();
 }
 
 /**

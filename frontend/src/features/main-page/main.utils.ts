@@ -1,11 +1,28 @@
 import * as yup from 'yup';
 import { MaterialFormat } from '../../common/enums/material-format.enum';
+import { ProcessStep } from '../../common/enums/process-step.enum';
 import type {
   MainPageFormValues,
   ProcessRequest,
   ProcessSettings,
 } from '../../common/types/app.types';
+import { PROCESS_STEP_MESSAGES } from './main.constants';
 import { mainPageFormSchema } from './main.schema';
+
+/**
+ * Returns loading message for the current process step.
+ */
+export function getProcessLoadingMessage(step: ProcessStep): string | null {
+  if (step === ProcessStep.TRANSCRIBING) {
+    return PROCESS_STEP_MESSAGES.transcribing;
+  }
+
+  if (step === ProcessStep.AI_PROCESSING) {
+    return PROCESS_STEP_MESSAGES.ai_processing;
+  }
+
+  return null;
+}
 
 /**
  * Maps validated form values to API process settings.

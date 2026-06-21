@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { MaterialFormat } from '../../common/enums/material-format.enum';
 import { Language } from '../../common/enums/language.enum';
+import { ProcessStep } from '../../common/enums/process-step.enum';
 import { SummaryLength } from '../../common/enums/summary-length.enum';
-import { DEFAULT_MAIN_PAGE_VALUES } from './main.constants';
+import {
+  DEFAULT_MAIN_PAGE_VALUES,
+  PROCESS_STEP_MESSAGES,
+} from './main.constants';
 import {
   buildProcessRequest,
+  getProcessLoadingMessage,
   mapFormValuesToSettings,
   validateMainPageForm,
 } from './main.utils';
@@ -59,5 +64,15 @@ describe('main.utils', () => {
     });
 
     expect(error).toBeNull();
+  });
+
+  it('returns loading message for active process steps', () => {
+    expect(getProcessLoadingMessage(ProcessStep.TRANSCRIBING)).toBe(
+      PROCESS_STEP_MESSAGES.transcribing,
+    );
+    expect(getProcessLoadingMessage(ProcessStep.AI_PROCESSING)).toBe(
+      PROCESS_STEP_MESSAGES.ai_processing,
+    );
+    expect(getProcessLoadingMessage(ProcessStep.IDLE)).toBeNull();
   });
 });
