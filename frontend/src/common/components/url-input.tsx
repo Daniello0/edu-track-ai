@@ -20,9 +20,6 @@ export function UrlInput({
 }: UrlInputProps) {
   return (
     <div className="url-input-wrapper">
-      <label className="url-input-label" htmlFor="video-url">
-        Ссылка на видео
-      </label>
       <input
         id="video-url"
         type="url"
@@ -30,9 +27,15 @@ export function UrlInput({
         value={value}
         placeholder={placeholder}
         disabled={disabled}
+        aria-invalid={Boolean(error)}
+        aria-describedby={error ? 'video-url-error' : undefined}
         onChange={(event) => onChange(event.target.value)}
       />
-      {error ? <p className="url-input-error">{error}</p> : null}
+      {error ? (
+        <p id="video-url-error" className="url-input-error">
+          {error}
+        </p>
+      ) : null}
     </div>
   );
 }

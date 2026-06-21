@@ -1,0 +1,27 @@
+.collapsible-section {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    grid-template-rows ease,
+    opacity ease,
+    margin-top ease;
+  margin-top: 0;
+}
+
+.collapsible-section--open {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 1rem;
+}
+
+.collapsible-section-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.collapsible-section:not(.collapsible-section--open) .collapsible-section-inner {
+  visibility: hidden;
+  pointer-events: none;
+}

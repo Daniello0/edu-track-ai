@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { ProcessStep } from '../enums/process-step.enum';
 import { Theme } from '../enums/theme.enum';
+import { THEME_STORAGE_KEY } from '../constants/ui.constants';
 import type { ReaderState } from '../types/app.types';
 
 interface AppState {
@@ -23,7 +24,14 @@ interface AppState {
   setProcessError: (error: string | null) => void;
   setReaderMaterial: (reader: ReaderState) => void;
   resetReader: () => void;
+  setTheme: (theme: Theme) => void;
+  toggleTheme: () => void;
 }
+
+const readStoredTheme = (): Theme => {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  return stored === Theme.DARK ? Theme.DARK : Theme.LIGHT;
+};
 
 const emptyReader = (): ReaderState => ({
   materialId: null,
@@ -49,7 +57,7 @@ export const useAppStore = create<AppState>((set) => ({
     error: null,
   },
   reader: emptyReader(),
-  theme: Theme.LIGHT,
+  theme: readStoredTheme(),
   user: {
     id: null,
     email: null,
@@ -94,4 +102,16 @@ export const useAppStore = create<AppState>((set) => ({
         step: ProcessStep.IDLE,
       },
     })),
+  setTheme: (theme) => {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+    document.documentElement.dataset.theme = theme;
+    set({ theme });
+  },
+  toggleTheme: () =>
+    set((state) => {
+      const nextTheme = state.theme === Theme.LIGHT ? Theme.DARK : Theme.LIGHT;
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+      document.documentElement.dataset.theme = nextTheme;
+      return { theme: nextTheme };
+    }),
 }));
