@@ -4,18 +4,20 @@ import {
   CATEGORY_BADGE_BG,
   MATERIAL_CATEGORY_LABELS,
 } from '../../common/constants/ui.constants';
+import { AuthModalVariant } from '../../common/enums/auth-modal-variant.enum';
 import { useAppStore } from '../../common/stores/app.store';
 import { formatLongDate } from '../../common/utils/formatters.utils';
 import { renderReaderContent } from './reader.utils';
 import './reader.styles.css';
 
 /**
- * Reading mode page with mock material from store.
+ * Reading mode page with material from store.
  */
 export function ReaderPage() {
   const navigate = useNavigate();
   const reader = useAppStore((state) => state.reader);
   const resetReader = useAppStore((state) => state.resetReader);
+  const openAuthModal = useAppStore((state) => state.openAuthModal);
 
   if (!reader.title || !reader.content) {
     return <Navigate to={APP_ROUTES.HOME} replace />;
@@ -33,6 +35,10 @@ export function ReaderPage() {
 
   const handleGoToQuiz = (): void => {
     navigate(APP_ROUTES.QUIZ);
+  };
+
+  const handleSave = (): void => {
+    openAuthModal(AuthModalVariant.GUEST);
   };
 
   return (
@@ -62,7 +68,11 @@ export function ReaderPage() {
         {reader.isPersisted ? (
           <span className="reader-library-badge">В библиотеке</span>
         ) : (
-          <button type="button" className="reader-action-primary">
+          <button
+            type="button"
+            className="reader-action-primary"
+            onClick={handleSave}
+          >
             Сохранить в библиотеку
           </button>
         )}

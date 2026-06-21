@@ -6,28 +6,38 @@ import {
   APP_ROUTES,
   ICON_STROKE_WIDTH,
 } from '../constants/app.constants';
+import { AuthModalVariant } from '../enums/auth-modal-variant.enum';
+import { useAppStore } from '../stores/app.store';
+import {
+  isAuthenticated,
+  performLogout,
+} from '../../features/auth/auth-flow.utils';
 import { ThemeToggle } from './theme-toggle';
 import './header.styles.css';
 
-/** Mock user email for authenticated UI state. */
-const MOCK_USER_EMAIL = 'user@example.com';
-
 /**
- * Global header: logo, theme toggle, and auth controls (mock).
+ * Global header: logo, theme toggle, and auth controls.
  */
 export function Header() {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const user = useAppStore((state) => state.user);
+  const auth = useAppStore((state) => state.auth);
+  const clearAuth = useAppStore((state) => state.clearAuth);
+  const openAuthModal = useAppStore((state) => state.openAuthModal);
+
+  const isLoggedIn = isAuthenticated(user.id, auth.accessToken);
+
   const handleLogin = (): void => {
-    setIsAuthenticated(true);
+    openAuthModal(AuthModalVariant.LOGIN);
   };
 
   const handleLogout = (): void => {
-    setIsAuthenticated(false);
-    setIsMenuOpen(false);
-    navigate(APP_ROUTES.HOME);
+    void performLogout(auth.refreshToken, { clearAuth }).finally(() => {
+      setIsMenuOpen(false);
+      navigate(APP_ROUTES.HOME);
+    });
   };
 
   return (
@@ -40,7 +50,7 @@ export function Header() {
       <div className="header-actions">
         <ThemeToggle />
 
-        {isAuthenticated ? (
+        {isLoggedIn ? (
           <div className="header-user-menu">
             <button
               type="button"
@@ -59,7 +69,7 @@ export function Header() {
 
             {isMenuOpen ? (
               <div className="header-dropdown" role="menu">
-                <span className="header-dropdown-email">{MOCK_USER_EMAIL}</span>
+                <span className="header-dropdown-email">{user.email}</span>
                 <Link
                   to={APP_ROUTES.PROFILE}
                   className="header-dropdown-item"

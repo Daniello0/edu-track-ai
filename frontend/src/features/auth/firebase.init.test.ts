@@ -1,8 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const mockInitializeApp = vi.fn((_config?: unknown) => ({ name: '[DEFAULT]' }));
-const mockGetApps = vi.fn(() => [] as Array<{ name: string }>);
-const mockGetAuth = vi.fn((_app?: unknown) => ({ kind: 'auth' }));
+const { mockInitializeApp, mockGetApps, mockGetAuth } = vi.hoisted(() => ({
+  mockInitializeApp: vi.fn((config: unknown) => {
+    void config;
+    return { name: '[DEFAULT]' };
+  }),
+  mockGetApps: vi.fn(() => [] as Array<{ name: string }>),
+  mockGetAuth: vi.fn((app: unknown) => {
+    void app;
+    return { kind: 'auth' };
+  }),
+}));
 
 vi.mock('firebase/app', () => ({
   initializeApp: (config: unknown) => mockInitializeApp(config),
@@ -21,6 +29,14 @@ const validConfig = {
   messagingSenderId: 'sender-id',
 };
 
+const placeholderConfig = {
+  apiKey: 'your-firebase-api-key',
+  authDomain: 'your-project.firebaseapp.com',
+  projectId: 'your-project-id',
+  appId: 'your-firebase-app-id',
+  messagingSenderId: 'your-messaging-sender-id',
+};
+
 describe('firebase.init', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -35,6 +51,14 @@ describe('firebase.init', () => {
 
     expect(() => assertFirebaseConfig({ ...validConfig, apiKey: '' })).toThrow(
       /Missing Firebase config values/,
+    );
+  });
+
+  it('throws when Firebase config contains .env.example placeholders', async () => {
+    const { assertFirebaseConfig } = await import('./firebase.init');
+
+    expect(() => assertFirebaseConfig(placeholderConfig)).toThrow(
+      /Firebase не настроен/,
     );
   });
 

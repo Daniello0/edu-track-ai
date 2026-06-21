@@ -1,6 +1,14 @@
 import * as yup from 'yup';
 import { AuthMode } from '../../common/enums/auth-mode.enum';
-import { AUTH_SESSION_STORAGE_KEY } from './auth.constants';
+import { AuthModalVariant } from '../../common/enums/auth-modal-variant.enum';
+import {
+  AUTH_MODAL_GUEST_TITLE,
+  AUTH_MODAL_LOGIN_TITLE,
+  AUTH_MODAL_SIGN_UP_TITLE,
+  AUTH_SESSION_STORAGE_KEY,
+  GOOGLE_SIGN_IN_LABEL,
+  GOOGLE_SIGN_UP_LABEL,
+} from './auth.constants';
 import { authFormSchema } from './auth.schema';
 import type {
   AuthFormValues,
@@ -8,6 +16,31 @@ import type {
   AuthStorePayload,
   StoredAuthSession,
 } from './auth.types';
+
+/**
+ * Returns modal title for the current auth variant and sign-in/sign-up mode.
+ */
+export function getAuthModalTitle(
+  variant: AuthModalVariant,
+  mode: AuthMode,
+): string {
+  if (mode === AuthMode.SIGN_UP) {
+    return AUTH_MODAL_SIGN_UP_TITLE;
+  }
+
+  return variant === AuthModalVariant.GUEST
+    ? AUTH_MODAL_GUEST_TITLE
+    : AUTH_MODAL_LOGIN_TITLE;
+}
+
+/**
+ * Returns Google auth button label for the current sign-in/sign-up mode.
+ */
+export function getGoogleAuthLabel(mode: AuthMode): string {
+  return mode === AuthMode.SIGN_UP
+    ? GOOGLE_SIGN_UP_LABEL
+    : GOOGLE_SIGN_IN_LABEL;
+}
 
 /**
  * Maps a successful session API response to Zustand user/auth slices.

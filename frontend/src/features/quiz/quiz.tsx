@@ -1,16 +1,23 @@
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { APP_ROUTES } from '../../common/constants/app.constants';
+import { AuthModalVariant } from '../../common/enums/auth-modal-variant.enum';
 import { useAppStore } from '../../common/stores/app.store';
+import { isAuthenticated } from '../auth/auth-flow.utils';
 import './quiz.styles.css';
 
 /**
- * Interactive quiz page (UI mock, no server verification).
+ * Interactive quiz page (guest: local only; auth: server verification planned).
  */
 export function QuizPage() {
   const navigate = useNavigate();
   const reader = useAppStore((state) => state.reader);
+  const user = useAppStore((state) => state.user);
+  const accessToken = useAppStore((state) => state.auth.accessToken);
+  const resetReader = useAppStore((state) => state.resetReader);
+  const openAuthModal = useAppStore((state) => state.openAuthModal);
   const questions = reader.quiz ?? [];
+  const isLoggedIn = isAuthenticated(user.id, accessToken);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<
@@ -44,6 +51,15 @@ export function QuizPage() {
     }
   };
 
+  const handleSaveToLibrary = (): void => {
+    openAuthModal(AuthModalVariant.GUEST);
+  };
+
+  const handleDeleteAndExit = (): void => {
+    resetReader();
+    navigate(APP_ROUTES.HOME);
+  };
+
   const answeredCount = Object.keys(selectedAnswers).length;
   const mockScore = Math.round((answeredCount / totalQuestions) * 100);
 
@@ -53,10 +69,12 @@ export function QuizPage() {
         <div className="quiz-result">
           <h1 className="quiz-result-title">Результат</h1>
           <p className="quiz-result-score">{mockScore}%</p>
-          <p className="quiz-result-note">
-            Верифицированная оценка появится после сохранения материала в
-            библиотеку.
-          </p>
+          {!isLoggedIn || !reader.isPersisted ? (
+            <p className="quiz-result-note">
+              Верифицированная оценка появится после сохранения материала в
+              библиотеку.
+            </p>
+          ) : null}
           <div className="quiz-result-actions">
             <button
               type="button"
@@ -65,13 +83,33 @@ export function QuizPage() {
             >
               Вернуться к материалу
             </button>
-            <button
-              type="button"
-              className="quiz-btn-secondary"
-              onClick={() => navigate(APP_ROUTES.PROFILE)}
-            >
-              В профиль
-            </button>
+
+            {!isLoggedIn || !reader.isPersisted ? (
+              <>
+                <button
+                  type="button"
+                  className="quiz-btn-primary"
+                  onClick={handleSaveToLibrary}
+                >
+                  Сохранить в библиотеку
+                </button>
+                <button
+                  type="button"
+                  className="quiz-btn-secondary"
+                  onClick={handleDeleteAndExit}
+                >
+                  Удалить и выйти
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="quiz-btn-secondary"
+                onClick={() => navigate(APP_ROUTES.PROFILE)}
+              >
+                В профиль
+              </button>
+            )}
           </div>
         </div>
       </div>

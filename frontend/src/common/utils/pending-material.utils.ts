@@ -18,3 +18,26 @@ export function storeGuestPendingMaterial(response: ProcessResponse): void {
     savePendingMaterial(pending);
   }
 }
+
+/**
+ * Reads guest pending material from sessionStorage, if present.
+ */
+export function readPendingMaterial(): PendingMaterial | null {
+  const raw = sessionStorage.getItem(PENDING_MATERIAL_STORAGE_KEY);
+  if (raw === null) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(raw) as PendingMaterial;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Removes guest pending material from sessionStorage.
+ */
+export function clearPendingMaterial(): void {
+  sessionStorage.removeItem(PENDING_MATERIAL_STORAGE_KEY);
+}

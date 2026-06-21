@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { AuthModalVariant } from '../enums/auth-modal-variant.enum';
 import { ProcessStep } from '../enums/process-step.enum';
 import { Theme } from '../enums/theme.enum';
 import { THEME_STORAGE_KEY } from '../constants/ui.constants';
@@ -27,6 +28,10 @@ interface AppState {
     accessToken: string | null;
     refreshToken: string | null;
   };
+  authModal: {
+    isOpen: boolean;
+    variant: AuthModalVariant;
+  };
   setProcessLoading: (isLoading: boolean, step?: ProcessStep) => void;
   setProcessError: (error: string | null) => void;
   setReaderMaterial: (reader: ReaderState) => void;
@@ -36,6 +41,9 @@ interface AppState {
   setAuthSession: (session: AuthSessionResponse) => void;
   clearAuth: () => void;
   hydrateAuthFromStorage: () => void;
+  openAuthModal: (variant: AuthModalVariant) => void;
+  closeAuthModal: () => void;
+  markReaderPersisted: (materialId: string) => void;
 }
 
 const readStoredTheme = (): Theme => {
@@ -80,6 +88,10 @@ export const useAppStore = create<AppState>((set) => ({
   theme: readStoredTheme(),
   user: emptyAuthUser(),
   auth: emptyAuthTokens(),
+  authModal: {
+    isOpen: false,
+    variant: AuthModalVariant.LOGIN,
+  },
   setProcessLoading: (isLoading, step = ProcessStep.IDLE) =>
     set((state) => ({
       currentProcess: {
@@ -161,4 +173,27 @@ export const useAppStore = create<AppState>((set) => ({
       },
     });
   },
+  openAuthModal: (variant) =>
+    set({
+      authModal: {
+        isOpen: true,
+        variant,
+      },
+    }),
+  closeAuthModal: () =>
+    set((state) => ({
+      authModal: {
+        ...state.authModal,
+        isOpen: false,
+      },
+    })),
+  markReaderPersisted: (materialId) =>
+    set((state) => ({
+      reader: {
+        ...state.reader,
+        materialId,
+        pendingId: null,
+        isPersisted: true,
+      },
+    })),
 }));

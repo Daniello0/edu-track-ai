@@ -4,6 +4,8 @@ import {
   getFirebaseConfig,
   type FirebaseConfig,
 } from '../../common/utils/env.utils';
+import { isPlaceholderFirebaseConfig } from '../../common/utils/firebase-config.utils';
+import { FIREBASE_PLACEHOLDER_CONFIG_MESSAGE } from './auth.constants';
 
 let firebaseApp: FirebaseApp | null = null;
 let firebaseAuth: Auth | null = null;
@@ -22,6 +24,10 @@ export function assertFirebaseConfig(config: FirebaseConfig): void {
     throw new Error(
       `Missing Firebase config values: ${missingKeys.join(', ')}`,
     );
+  }
+
+  if (isPlaceholderFirebaseConfig(config)) {
+    throw new Error(FIREBASE_PLACEHOLDER_CONFIG_MESSAGE);
   }
 }
 
