@@ -1,6 +1,83 @@
 .background-shape {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: -1;
+  overflow: hidden;
   pointer-events: none;
+}
+
+.background-shape::before,
+.background-shape::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  will-change: transform;
+}
+
+.background-shape::before {
+  top: -10%;
+  left: -5%;
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(circle, #b2e2d4 0%, transparent 70%);
+  animation: background-shape-drift-a 14s ease-in-out infinite;
+}
+
+.background-shape::after {
+  bottom: -15%;
+  right: -10%;
+  width: 50vw;
+  height: 50vw;
+  background: radial-gradient(circle, #ffd6e0 0%, transparent 70%);
+  animation: background-shape-drift-b 18s ease-in-out infinite;
+}
+
+:root[data-theme='dark'] .background-shape::before {
+  background: radial-gradient(circle, #8e8ebc 0%, transparent 70%);
+  opacity: 0.25;
+}
+
+:root[data-theme='dark'] .background-shape::after {
+  background: radial-gradient(circle, #5a5a7a 0%, transparent 70%);
+  opacity: 0.2;
+}
+
+@keyframes background-shape-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(3vw, 4vh);
+  }
+
+  50% {
+    transform: translate(5vw, 6vh);
+  }
+
+  75% {
+    transform: translate(2vw, 3vh);
+  }
+}
+
+@keyframes background-shape-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  25% {
+    transform: translate(-4vw, -3vh);
+  }
+
+  50% {
+    transform: translate(-6vw, -5vh);
+  }
+
+  75% {
+    transform: translate(-3vw, -6vh);
+  }
 }

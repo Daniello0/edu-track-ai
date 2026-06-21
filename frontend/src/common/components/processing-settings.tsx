@@ -1,3 +1,4 @@
+import { CollapsibleSection } from './collapsible-section';
 import { MaterialFormat } from '../enums/material-format.enum';
 import type { MainPageFormValues } from '../types/app.types';
 import {
@@ -59,8 +60,8 @@ export function ProcessingSettings({
         </div>
       </div>
 
-      {showSummaryLength ? (
-        <div className="processing-settings-group">
+      <CollapsibleSection isOpen={showSummaryLength}>
+        <div className="processing-settings-group processing-settings-group--nested">
           <span className="processing-settings-group-label">Объём саммари</span>
           <div className="processing-settings-segmented">
             {SUMMARY_LENGTH_OPTIONS.map((option) => (
@@ -80,7 +81,7 @@ export function ProcessingSettings({
             ))}
           </div>
         </div>
-      ) : null}
+      </CollapsibleSection>
 
       <div className="processing-settings-group">
         <label className="processing-settings-group-label" htmlFor="language">
@@ -116,7 +117,7 @@ export function ProcessingSettings({
         </label>
       </div>
 
-      {values.hasQuiz ? (
+      <CollapsibleSection isOpen={values.hasQuiz}>
         <div className="processing-settings-quiz-row">
           <label className="processing-settings-number-field">
             Вопросов
@@ -143,7 +144,7 @@ export function ProcessingSettings({
             />
           </label>
         </div>
-      ) : null}
+      </CollapsibleSection>
     </fieldset>
   );
 }

@@ -13,6 +13,9 @@ export const ICON_STROKE_WIDTH = 1.5;
 /** Application route paths. */
 export const APP_ROUTES = {
   HOME: '/',
+  READER: '/reader',
+  QUIZ: '/quiz',
+  PROFILE: '/profile',
 } as const;
 
 /** Generic process failure message. */

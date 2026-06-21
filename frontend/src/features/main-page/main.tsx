@@ -1,25 +1,28 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BackgroundShape } from '../../common/components/background-shape';
+import { LoadingIndicator } from '../../common/components/loading-indicator';
 import { MainActionButton } from '../../common/components/main-action-button';
 import { ProcessingSettings } from '../../common/components/processing-settings';
 import { UrlInput } from '../../common/components/url-input';
-import { APP_NAME } from '../../common/constants/app.constants';
-import { ProcessStep } from '../../common/enums/process-step.enum';
 import { useAppStore } from '../../common/stores/app.store';
 import type { MainPageFormValues } from '../../common/types/app.types';
 import {
   DEFAULT_MAIN_PAGE_VALUES,
-  PROCESS_STEP_MESSAGES,
   READ_ACTION_LABEL,
   URL_INPUT_PLACEHOLDER,
 } from './main.constants';
+import {
+  getMockLoadingMessage,
+  mockNavigateToReader,
+} from './main.mock-navigation.utils';
 import './main.styles.css';
-import { submitMainPageProcess } from './submit-process.utils';
 
 /**
- * Main page: URL input, processing settings, and pipeline trigger.
+ * Main page: URL input, processing settings, and mock navigation to reader.
  */
 export function MainPage() {
+  const navigate = useNavigate();
   const [formValues, setFormValues] = useState<MainPageFormValues>(
     DEFAULT_MAIN_PAGE_VALUES,
   );
@@ -27,23 +30,17 @@ export function MainPage() {
 
   const isLoading = useAppStore((state) => state.currentProcess.isLoading);
   const processStep = useAppStore((state) => state.currentProcess.step);
-  const processError = useAppStore((state) => state.currentProcess.error);
-  const accessToken = useAppStore((state) => state.auth.accessToken);
   const setProcessLoading = useAppStore((state) => state.setProcessLoading);
-  const setProcessError = useAppStore((state) => state.setProcessError);
   const setReaderMaterial = useAppStore((state) => state.setReaderMaterial);
 
-  const loadingMessage =
-    processStep === ProcessStep.TRANSCRIBING
-      ? PROCESS_STEP_MESSAGES.transcribing
-      : PROCESS_STEP_MESSAGES.ai_processing;
+  const loadingMessage = getMockLoadingMessage(processStep);
 
   const handleSubmit = (): void => {
-    void submitMainPageProcess(formValues, accessToken, {
+    void mockNavigateToReader(formValues, {
       setFieldError,
       setProcessLoading,
-      setProcessError,
       setReaderMaterial,
+      navigate,
     });
   };
 
@@ -51,7 +48,15 @@ export function MainPage() {
     <main className="main-page">
       <BackgroundShape />
       <div className="main-page-content">
-        <h1 className="main-page-title">{APP_NAME}</h1>
+        <header className="main-page-hero">
+          <h1 className="main-page-heading">
+            Превратите видео в учебный материал
+          </h1>
+          <p className="main-page-subheading">
+            Вставьте ссылку на YouTube-лекцию и получите структурированный
+            пересказ с проверочным тестом
+          </p>
+        </header>
 
         <UrlInput
           value={formValues.videoUrl}
@@ -73,16 +78,8 @@ export function MainPage() {
           onClick={handleSubmit}
         />
 
-        {isLoading ? (
-          <p className="main-page-status" role="status">
-            {loadingMessage}
-          </p>
-        ) : null}
-
-        {processError ? (
-          <p className="main-page-error" role="alert">
-            {processError}
-          </p>
+        {isLoading && loadingMessage ? (
+          <LoadingIndicator message={loadingMessage} />
         ) : null}
       </div>
     </main>
