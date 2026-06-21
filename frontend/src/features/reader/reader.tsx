@@ -7,7 +7,7 @@ import {
 import { AuthModalVariant } from '../../common/enums/auth-modal-variant.enum';
 import { useAppStore } from '../../common/stores/app.store';
 import { formatLongDate } from '../../common/utils/formatters.utils';
-import { renderReaderContent } from './reader.utils';
+import { renderReaderContent } from './reader-content.utils';
 import './reader.styles.css';
 
 /**
