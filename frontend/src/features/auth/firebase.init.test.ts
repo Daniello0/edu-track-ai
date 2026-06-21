@@ -1,0 +1,72 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const mockInitializeApp = vi.fn((_config?: unknown) => ({ name: '[DEFAULT]' }));
+const mockGetApps = vi.fn(() => [] as Array<{ name: string }>);
+const mockGetAuth = vi.fn((_app?: unknown) => ({ kind: 'auth' }));
+
+vi.mock('firebase/app', () => ({
+  initializeApp: (config: unknown) => mockInitializeApp(config),
+  getApps: () => mockGetApps(),
+}));
+
+vi.mock('firebase/auth', () => ({
+  getAuth: (app: unknown) => mockGetAuth(app),
+}));
+
+const validConfig = {
+  apiKey: 'api-key',
+  authDomain: 'project.firebaseapp.com',
+  projectId: 'project-id',
+  appId: 'app-id',
+  messagingSenderId: 'sender-id',
+};
+
+describe('firebase.init', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    mockGetApps.mockReturnValue([]);
+
+    const { resetFirebaseInitForTests } = await import('./firebase.init');
+    resetFirebaseInitForTests();
+  });
+
+  it('throws when Firebase config is incomplete', async () => {
+    const { assertFirebaseConfig } = await import('./firebase.init');
+
+    expect(() => assertFirebaseConfig({ ...validConfig, apiKey: '' })).toThrow(
+      /Missing Firebase config values/,
+    );
+  });
+
+  it('initializes Firebase app with provided config', async () => {
+    const { initializeFirebaseApp } = await import('./firebase.init');
+
+    const app = initializeFirebaseApp(validConfig);
+
+    expect(mockInitializeApp).toHaveBeenCalledWith(validConfig);
+    expect(app).toEqual({ name: '[DEFAULT]' });
+  });
+
+  it('reuses existing Firebase app on subsequent calls', async () => {
+    const existingApp = { name: 'existing' };
+    mockGetApps.mockReturnValue([existingApp]);
+
+    const { initializeFirebaseApp } = await import('./firebase.init');
+
+    const first = initializeFirebaseApp(validConfig);
+    const second = initializeFirebaseApp(validConfig);
+
+    expect(mockInitializeApp).not.toHaveBeenCalled();
+    expect(first).toBe(existingApp);
+    expect(second).toBe(existingApp);
+  });
+
+  it('returns Firebase Auth instance', async () => {
+    const { getFirebaseAuthInstance } = await import('./firebase.init');
+
+    const auth = getFirebaseAuthInstance(validConfig);
+
+    expect(mockGetAuth).toHaveBeenCalled();
+    expect(auth).toEqual({ kind: 'auth' });
+  });
+});

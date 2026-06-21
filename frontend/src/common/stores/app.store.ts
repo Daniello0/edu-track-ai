@@ -2,6 +2,13 @@ import { create } from 'zustand';
 import { ProcessStep } from '../enums/process-step.enum';
 import { Theme } from '../enums/theme.enum';
 import { THEME_STORAGE_KEY } from '../constants/ui.constants';
+import type { AuthSessionResponse } from '../../features/auth/auth.types';
+import {
+  clearPersistedAuthSession,
+  mapSessionResponseToStorePayload,
+  persistAuthSession,
+  readPersistedAuthSession,
+} from '../../features/auth/auth.utils';
 import type { ReaderState } from '../types/app.types';
 
 interface AppState {
@@ -26,12 +33,25 @@ interface AppState {
   resetReader: () => void;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  setAuthSession: (session: AuthSessionResponse) => void;
+  clearAuth: () => void;
+  hydrateAuthFromStorage: () => void;
 }
 
 const readStoredTheme = (): Theme => {
   const stored = localStorage.getItem(THEME_STORAGE_KEY);
   return stored === Theme.DARK ? Theme.DARK : Theme.LIGHT;
 };
+
+const emptyAuthUser = () => ({
+  id: null as string | null,
+  email: null as string | null,
+});
+
+const emptyAuthTokens = () => ({
+  accessToken: null as string | null,
+  refreshToken: null as string | null,
+});
 
 const emptyReader = (): ReaderState => ({
   materialId: null,
@@ -58,14 +78,8 @@ export const useAppStore = create<AppState>((set) => ({
   },
   reader: emptyReader(),
   theme: readStoredTheme(),
-  user: {
-    id: null,
-    email: null,
-  },
-  auth: {
-    accessToken: null,
-    refreshToken: null,
-  },
+  user: emptyAuthUser(),
+  auth: emptyAuthTokens(),
   setProcessLoading: (isLoading, step = ProcessStep.IDLE) =>
     set((state) => ({
       currentProcess: {
@@ -114,4 +128,37 @@ export const useAppStore = create<AppState>((set) => ({
       document.documentElement.dataset.theme = nextTheme;
       return { theme: nextTheme };
     }),
+  setAuthSession: (session) => {
+    const payload = mapSessionResponseToStorePayload(session);
+    persistAuthSession({
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken,
+      user: session.user,
+    });
+    set(payload);
+  },
+  clearAuth: () => {
+    clearPersistedAuthSession();
+    set({
+      user: emptyAuthUser(),
+      auth: emptyAuthTokens(),
+    });
+  },
+  hydrateAuthFromStorage: () => {
+    const stored = readPersistedAuthSession();
+    if (stored === null) {
+      return;
+    }
+
+    set({
+      user: {
+        id: stored.user.id,
+        email: stored.user.email,
+      },
+      auth: {
+        accessToken: stored.accessToken,
+        refreshToken: stored.refreshToken,
+      },
+    });
+  },
 }));
