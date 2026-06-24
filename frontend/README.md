@@ -6,7 +6,7 @@ React + Vite SPA для EduTrack AI. Организация кода — feature
 
 | Feature | UI | Service |
 | :--- | :--- | :--- |
-| `axios` | — | `axios.client.ts` — shared HTTP client (`baseURL: /api`) |
+| `axios` | — | `axios.client.ts`, `axios-auth.interceptor.ts` — shared HTTP client + auto JWT refresh |
 | `main-page` | ✓ | `main.service.ts` → `POST /api/process` |
 | `auth` | ✓ | `auth.service.ts`, `firebase-auth.service.ts` |
 | `library` | — | `library.service.ts` → `POST /api/library/claim-pending` |

@@ -110,7 +110,7 @@ OpenAPI/Swagger UI: `GET /docs`.
 
 | Feature | Статус | Назначение |
 | :--- | :--- | :--- |
-| `axios` | ✓ client | Shared HTTP client (`getApiClient()`, `baseURL: /api`). |
+| `axios` | ✓ client | Shared HTTP client + JWT refresh interceptor. |
 | `main-page` | ✓ UI + API | Ввод URL, настройки обработки, `POST /api/process`. |
 | `reader` | ✓ UI + service | Режим чтения; `reader.service` — `GET /api/library/:id`; удаление через `profile.service`. |
 | `quiz` | ✓ UI + service | Прохождение теста; `quiz.service` — `POST /api/library/:id/quiz/attempts` для сохранённых материалов. |

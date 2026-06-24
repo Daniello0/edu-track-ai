@@ -3,12 +3,16 @@ import { AuthModalVariant } from '../enums/auth-modal-variant.enum';
 import { ProcessStep } from '../enums/process-step.enum';
 import { Theme } from '../enums/theme.enum';
 import { THEME_STORAGE_KEY } from '../constants/ui.constants';
-import type { AuthSessionResponse } from '../../features/auth/auth.types';
+import type {
+  AuthRefreshResponse,
+  AuthSessionResponse,
+} from '../../features/auth/auth.types';
 import {
   clearPersistedAuthSession,
   mapSessionResponseToStorePayload,
   persistAuthSession,
   readPersistedAuthSession,
+  updatePersistedAuthTokens,
 } from '../../features/auth/auth.utils';
 import type { ReaderState } from '../types/app.types';
 
@@ -39,6 +43,7 @@ interface AppState {
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   setAuthSession: (session: AuthSessionResponse) => void;
+  updateAuthTokens: (tokens: AuthRefreshResponse) => void;
   clearAuth: () => void;
   hydrateAuthFromStorage: () => void;
   openAuthModal: (variant: AuthModalVariant) => void;
@@ -148,6 +153,15 @@ export const useAppStore = create<AppState>((set) => ({
       user: session.user,
     });
     set(payload);
+  },
+  updateAuthTokens: (tokens) => {
+    updatePersistedAuthTokens(tokens);
+    set({
+      auth: {
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
+    });
   },
   clearAuth: () => {
     clearPersistedAuthSession();

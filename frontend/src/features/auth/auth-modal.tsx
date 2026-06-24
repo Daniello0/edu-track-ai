@@ -9,8 +9,8 @@ import {
 import { ICON_STROKE_WIDTH } from '../../common/constants/app.constants';
 import { AuthModalVariant } from '../../common/enums/auth-modal-variant.enum';
 import { AuthMode } from '../../common/enums/auth-mode.enum';
-import { GUEST_CALLOUT_MESSAGE } from './auth.constants';
 import { AuthForm } from './auth-form';
+import { AuthGuestCallout } from './auth-guest-callout';
 import { getAuthModalTitle } from './auth.utils';
 import './auth-modal.styles.css';
 
@@ -98,7 +98,7 @@ export function AuthModal({
         </div>
 
         {variant === AuthModalVariant.GUEST && mode === AuthMode.SIGN_IN ? (
-          <p className="auth-modal-guest-callout">{GUEST_CALLOUT_MESSAGE}</p>
+          <AuthGuestCallout />
         ) : null}
 
         <AuthForm
