@@ -74,10 +74,12 @@ frontend/                    # React + Vite SPA (React Router)
     ├── common/              # enums, constants, types, components, utils, stores
     └── features/
         ├── main-page/       # главная страница (main.tsx, main.service.ts, …)
-        ├── reader/          # planned
-        ├── quiz/            # planned
-        ├── profile/         # planned
-        └── auth/            # planned
+        ├── axios/           # shared axios client (baseURL /api)
+        ├── reader/          # types, utils, service (GET /api/library/:id)
+        ├── quiz/            # types, utils, service (POST quiz attempts)
+        ├── profile/         # types, utils, service (library list/status/delete)
+        ├── library/         # claim-pending service
+        └── auth/            # Firebase Auth, JWT-сессия, модальное окно
 docs/                        # Продуктовая и техническая документация
 ```
 
@@ -104,15 +106,17 @@ OpenAPI/Swagger UI: `GET /docs`.
 | `refresh-token` | ✓ | Entity `refresh_tokens`. |
 | `health` | ✓ | `GET /` — health-check. |
 
-**Основные фичи (frontend, planned):**
+**Основные фичи (frontend):**
 
-| Feature | Назначение |
-| :--- | :--- |
-| `main-page` | Ввод URL, настройки обработки, запуск pipeline. |
-| `reader` | Режим чтения сгенерированного контента. |
-| `quiz` | Прохождение теста и отображение результата. |
-| `profile` | Дашборд, библиотека материалов, статистика. |
-| `auth` | Firebase Auth, JWT-сессия, модальное окно для гостей. |
+| Feature | Статус | Назначение |
+| :--- | :--- | :--- |
+| `axios` | ✓ client | Shared HTTP client + JWT refresh interceptor. |
+| `main-page` | ✓ UI + API | Ввод URL, настройки обработки, `POST /api/process`. |
+| `reader` | ✓ UI + service | Режим чтения; `reader.service` — `GET /api/library/:id`; удаление через `profile.service`. |
+| `quiz` | ✓ UI + service | Прохождение теста; `quiz.service` — `POST /api/library/:id/quiz/attempts` для сохранённых материалов. |
+| `profile` | ✓ UI + service | Дашборд и библиотека; `profile.service` — list/status/delete; «Продолжить» → `reader.service`. |
+| `library` | ✓ service | `claim-pending` после авторизации гостя. |
+| `auth` | ✓ UI + API | Firebase Auth, JWT-сессия, модальное окно для гостей. |
 
 **Поток обработки видео:**
 

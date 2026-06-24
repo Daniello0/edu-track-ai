@@ -21,3 +21,7 @@ export const APP_ROUTES = {
 /** Generic process failure message. */
 export const PROCESS_FAILURE_MESSAGE =
   'Не удалось обработать видео. Попробуйте снова.';
+
+/** Generic API failure message for non-process endpoints. */
+export const API_FAILURE_MESSAGE =
+  'Не удалось выполнить запрос. Попробуйте снова.';

@@ -590,49 +590,61 @@ AI возвращает строго валидный JSON через OpenRouter
 
 > Реализация перечисленных UI-компонентов — в `frontend/src/common/components/` (переиспользуются между фичами, аналогично DTO на бэкенде).
 
+**Frontend API services** — единый axios-клиент в `frontend/src/features/axios/` (`axios.client.ts`, `baseURL: /api`). Feature-сервисы импортируют `getApiClient()`. UI вызывает сервисы через feature-утилиты (`*-library.utils`, `reader-actions.utils`, `quiz-submit.utils`):
+
+| Feature | Файл | Методы API |
+| :--- | :--- | :--- |
+| `axios` | `axios.client.ts`, `axios-auth.interceptor.ts` | Shared HTTP client |
+| `main-page` | `main.service.ts` | `POST /process` |
+| `auth` | `auth.service.ts` | `POST /auth/session`, `/refresh`, `/logout` |
+| `library` | `library.service.ts` | `POST /library/claim-pending` |
+| `reader` | `reader.service.ts` | `GET /library/:id`; удаление — `DELETE /library/:id` через `reader-actions.utils` |
+| `quiz` | `quiz.service.ts` | `POST /library/:id/quiz/attempts` |
+| `profile` | `profile.service.ts` | `GET /library`, `PATCH /library/:id/status`, `DELETE /library/:id` |
+
 ### Feature: `reader`
 
-| Компонент | Ответственность |
-| :--- | :--- |
-| `ReaderHeader` | Заголовок, бейдж категории, дата |
-| `ContentArea` | Markdown-контент, шрифт `Lora`, `line-height: 1.7` |
-| `StickyActionBar` | Действия: для гостя — «Сохранить» (→ auth); для авторизованного — «Удалить», «Перейти к тестам» |
+| Компонент | Файл | Ответственность |
+| :--- | :--- | :--- |
+| `ReaderHeader` | `reader-header.tsx` | Заголовок, бейдж категории, дата |
+| `ContentArea` | `content-area.tsx` | Markdown-контент, шрифт `Lora`, `line-height: 1.7` |
+| `StickyActionBar` | `sticky-action-bar.tsx` | Действия: для гостя — «Сохранить» (→ auth); для авторизованного — «Удалить», «Перейти к тестам» |
 
 ### Feature: `quiz`
 
-| Компонент | Ответственность |
-| :--- | :--- |
-| `QuizCard` | Один вопрос с вариантами ответов |
-| `QuizProgress` | «Вопрос X из Y» |
-| `QuizResult` | Процент, разбор ошибок, кнопки финала |
+| Компонент | Файл | Ответственность |
+| :--- | :--- | :--- |
+| `QuizCard` | `quiz-card.tsx` | Один вопрос с вариантами ответов |
+| `QuizProgress` | `quiz-progress.tsx` | «Вопрос X из Y» |
+| `QuizResult` | `quiz-result.tsx` | Процент, разбор ошибок, кнопки финала |
 
 ### Feature: `profile`
 
-| Компонент | Ответственность |
-| :--- | :--- |
-| `StatsOverview` | Плитки статистики |
-| `MaterialGrid` | Сетка `MaterialCard` |
-| `MaterialCard` | Превью, заголовок, бейдж категории и статуса, «Продолжить» |
+| Компонент | Файл | Ответственность |
+| :--- | :--- | :--- |
+| `StatsOverview` | `stats-overview.tsx` | Плитки «Пройдено тестов», «Любимая категория» |
+| `MaterialGrid` | `material-grid.tsx` | Сетка `MaterialCard` |
+| `MaterialCard` | `material-card.tsx` | Превью, заголовок, бейдж категории и статуса, «Продолжить» |
 
 ### Feature: `auth`
 
-| Компонент | Ответственность |
-| :--- | :--- |
-| `AuthForm` | Email/пароль + кнопка «Войти через Google» (Firebase SDK) |
-| `GuestCallout` | Модальное окно при попытке сохранения гостем |
+| Компонент | Файл | Ответственность |
+| :--- | :--- | :--- |
+| `AuthForm` | `auth-form.tsx` | Email/пароль + кнопка «Войти через Google» (Firebase SDK) |
+| `AuthGuestCallout` | `auth-guest-callout.tsx` | Текст-призыв при сохранении гостем (внутри `AuthModal`) |
+| `AuthModal` | `auth-modal.tsx` | Модальное окно авторизации |
 
 ### Shared: `frontend/src/common/`
 
-| Компонент | Ответственность |
-| :--- | :--- |
-| `UrlInput` | Поле ввода URL (переиспользуемый) |
-| `ProcessingSettings` | Блок настроек обработки видео |
-| `MainActionButton` | Primary-кнопка с состоянием загрузки |
-| `BackgroundShape` | Декоративный фон |
-| `Header` | Логотип, тема, авторизация |
-| `ThemeToggle` | Переключатель light/dark |
-| `Toast` | Уведомления об ошибках |
-| `LoadingIndicator` | Пульсирующая иконка AI |
+| Компонент | Файл | Ответственность |
+| :--- | :--- | :--- |
+| `UrlInput` | `url-input.tsx` | Поле ввода URL (переиспользуемый) |
+| `ProcessingSettings` | `processing-settings.tsx` | Блок настроек обработки видео |
+| `MainActionButton` | `main-action-button.tsx` | Primary-кнопка с состоянием загрузки |
+| `BackgroundShape` | `background-shape.tsx` | Декоративный фон |
+| `Header` | `header.tsx` | Логотип, тема, авторизация |
+| `ThemeToggle` | `theme-toggle.tsx` | Переключатель light/dark |
+| `LoadingIndicator` | `loading-indicator.tsx` | Пульсирующая иконка AI |
 
 ---
 

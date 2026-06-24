@@ -12,6 +12,7 @@ import {
 import { authFormSchema } from './auth.schema';
 import type {
   AuthFormValues,
+  AuthRefreshResponse,
   AuthSessionResponse,
   AuthStorePayload,
   StoredAuthSession,
@@ -40,6 +41,22 @@ export function getGoogleAuthLabel(mode: AuthMode): string {
   return mode === AuthMode.SIGN_UP
     ? GOOGLE_SIGN_UP_LABEL
     : GOOGLE_SIGN_IN_LABEL;
+}
+
+/**
+ * Updates persisted auth tokens after a successful refresh response.
+ */
+export function updatePersistedAuthTokens(tokens: AuthRefreshResponse): void {
+  const stored = readPersistedAuthSession();
+  if (stored === null) {
+    return;
+  }
+
+  persistAuthSession({
+    ...stored,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+  });
 }
 
 /**

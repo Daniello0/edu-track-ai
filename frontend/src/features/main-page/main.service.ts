@@ -1,15 +1,10 @@
-import axios from 'axios';
 import type {
   ProcessRequest,
   ProcessResponse,
 } from '../../common/types/app.types';
+import { getApiClient } from '../axios/axios.client';
 
-const apiClient = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+const apiClient = getApiClient();
 
 /**
  * Sends a video processing request to the backend API.
@@ -28,11 +23,4 @@ export async function processVideo(
   });
 
   return response.data;
-}
-
-/**
- * Creates an axios client instance for API calls (used in tests).
- */
-export function getApiClient(): typeof apiClient {
-  return apiClient;
 }

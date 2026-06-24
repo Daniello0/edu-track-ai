@@ -92,6 +92,12 @@
   margin-bottom: 0.5rem;
 }
 
+.reader-action-error {
+  margin: 0 0 1.5rem;
+  color: #c0392b;
+  font-size: 0.875rem;
+}
+
 .reader-action-bar {
   position: sticky;
   bottom: 0;

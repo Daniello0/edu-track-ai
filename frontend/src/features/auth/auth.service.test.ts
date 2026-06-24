@@ -7,12 +7,10 @@ import {
 
 const mockPost = vi.fn();
 
-vi.mock('axios', () => ({
-  default: {
-    create: vi.fn(() => ({
-      post: (...args: unknown[]) => mockPost(...args),
-    })),
-  },
+vi.mock('../axios/axios.client', () => ({
+  getApiClient: () => ({
+    post: (...args: unknown[]) => mockPost(...args),
+  }),
 }));
 
 describe('auth.service', () => {
